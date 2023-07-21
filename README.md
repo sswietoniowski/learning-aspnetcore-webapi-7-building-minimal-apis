@@ -39,7 +39,7 @@ If you are using Visual Studio or JetBrains Rider you can use the built-in tools
 
 I'd like to concentrate on the new/different features of the minimal APIs in .NET 7, so I started with an existing code for my domain classes, DTOs, database contexts, etc. What I'll be using as my example will be a simple API for managing contacts.
 
-As this project is using .NET 7 and C# 11, I've decided to try out new language features provided by the latest version of C#. One of them is `required` keyword for properties (+ `[SetsRequiredMembers]` attribute), more on that [here](https://youtu.be/_hQPSOocXs0).
+As this project is using .NET 7 and C# 11, I've decided to try out new language features provided by the latest version of C#. One of them is `required` keyword for properties (+ `[SetsRequiredMembers]` attribute), more on that [here](https://youtu.be/_hQPSOocXs0). I also decided to refactor DTOs to use `record` keyword, more on that [here](https://youtu.be/9Byvwa9yF-I).
 
 ### Building APIs with ASP.NET Core
 
