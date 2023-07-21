@@ -41,4 +41,6 @@ app.UseHttpsRedirection();
 
 app.UseCors();
 
+app.MapGet("/", () => "Hello Minimal APIs");
+
 app.Run();
