@@ -8,7 +8,15 @@ Original course materials can be found [here](https://app.pluralsight.com/librar
 
 ## Setup
 
-TODO:
+To run API:
+
+```cmd
+cd .\contacts\backend\api
+dotnet restore
+dotnet ef database update
+dotnet build
+dotnet watch run
+```
 
 ## Introduction to ASP.NET Core Minimal APIs
 

@@ -1,0 +1,56 @@
+@baseUri = http://localhost:5000/api
+@id = 1
+
+### Get all contacts
+GET {{baseUri}}/contacts HTTP/1.1
+
+### Get all contacts but in XML format
+GET {{baseUri}}/contacts HTTP/1.1
+Accept: application/xml
+
+### Get single contact by id without Accept header
+GET {{baseUri}}/contacts/{{id}} HTTP/1.1
+# without Accept header, you'll receive an error (404 Not Found)
+
+### Get contact by id (default is JSON)
+GET {{baseUri}}/contacts/{{id}} HTTP/1.1
+Accept: application/json
+
+### Get contact by id but by using vendor specific media type
+GET {{baseUri}}/contacts/{{id}} HTTP/1.1
+Accept: application/vnd.company.contact+json
+
+### Create a new contact
+POST {{baseUri}}/contacts HTTP/1.1
+Content-Type: application/json
+
+{
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "jdoe@unknown.com"
+}
+
+### Create a new contact with phone numbers by using vendor specific media type
+POST {{baseUri}}/contacts HTTP/1.1
+Content-Type: application/vnd.company.contactwithphonesforcreation+json
+
+{
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "jdoe@unknown.com",
+    "phones": [
+        {
+            "number": "1234567890",
+            "description": "home"
+        },
+        {
+            "number": "0987654321",
+            "description": "work"
+        }
+    ]
+}
+
+### Get contacts by using API version 2.0 and authorization header (Basic authentication)
+GET {{baseUri}}/contacts HTTP/1.1
+X-API-Version: 2.0
+Authorization: Basic amRvZUB1bmtub3duLmNvbTpQQHNzdzByZA==
