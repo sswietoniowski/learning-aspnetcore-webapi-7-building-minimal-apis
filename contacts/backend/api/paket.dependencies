@@ -1,9 +1,0 @@
-source https://api.nuget.org/v3/index.json
-
-storage: none
-framework: net7.0, netstandard2.0, netstandard2.1
-
-nuget AutoMapper.Extensions.Microsoft.DependencyInjection
-nuget Microsoft.EntityFrameworkCore.Sqlite
-nuget Microsoft.EntityFrameworkCore.Tools
-nuget Swashbuckle.AspNetCore
