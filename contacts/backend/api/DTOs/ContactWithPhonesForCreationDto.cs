@@ -2,8 +2,9 @@
 
 namespace Contacts.Api.DTOs;
 
-public class ContactWithPhonesForCreationDto : ContactForCreationDto
-{
-    [Required]
-    public List<PhoneForCreationDto> Phones { get; set; } = new();
-}
+public record ContactWithPhonesForCreationDto(
+        [Required][MaxLength(32)] string FirstName,
+        [Required][StringLength(64)] string LastName,
+        [EmailAddress] string Email,
+        List<PhoneForCreationDto> Phones)
+    : ContactForCreationDto(FirstName, LastName, Email);
