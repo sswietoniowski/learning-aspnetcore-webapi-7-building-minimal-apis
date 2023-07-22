@@ -288,13 +288,29 @@ All rules for selecting the binding source (from the most important to the least
 
 There are some functionalities that most APIs would need.
 
+There is no built-in support for them in ASP.NET Core, but we can model them ourselves. Truth be told, we can implement them in many different ways (some more elegant than others). I'll show you one (relatively simple) way of doing it.
+
 #### Filtering
 
 > Limiting a collection resource, taking into account a predicate.
 
 Filter via the query string, using name/value combinations for fields to filter on.
 
-Showed during demo.
+```csharp
+// GET api/contacts
+// GET api/contacts?lastName=Nowak
+// GET api/contacts?search=ski
+// GET api/contacts?search=ski&orderBy=LastName&desc=true
+app.MapGet("/api/contacts", async ([FromQuery] string? lastName, [FromQuery] string? search, [FromQuery] string? orderBy, [FromQuery] bool? desc,
+    [FromServices] IContactsRepository repository, [FromServices] IMapper mapper) =>
+{
+    var contacts = await repository.GetContactsAsync(lastName, search, orderBy, desc);
+
+    var contactsDto = mapper.Map<IEnumerable<ContactDto>>(contacts);
+
+    return TypedResults.Ok(contactsDto);
+});
+```
 
 #### Searching
 
@@ -303,14 +319,14 @@ Showed during demo.
 Search via the query string, passing through a value to search for. It's up to the API to decide what to search
 through and how to search.
 
-Showed during demo.
+Showed in previous example.
 
 #### Sorting
 
 Sort via the query string, passing through fields and (optional) direction. Allow sorting on properties of the DTO,
 not on entity properties.
 
-Showed during demo.
+Showed in previous example.
 
 #### Paging
 
