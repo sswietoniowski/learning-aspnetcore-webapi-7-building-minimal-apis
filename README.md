@@ -26,6 +26,8 @@ Original course materials can be found [here](https://app.pluralsight.com/librar
     - [Modelling Common API Functionality](#modelling-common-api-functionality)
       - [Filtering](#filtering)
       - [Searching](#searching)
+      - [Sorting](#sorting)
+      - [Paging](#paging)
     - [Status Codes and Creating Responses](#status-codes-and-creating-responses)
     - [Creating Correct API Responses](#creating-correct-api-responses)
   - [Manipulating Resources](#manipulating-resources)
@@ -302,9 +304,48 @@ through and how to search.
 
 Showed during demo.
 
+#### Sorting
+
+Sort via the query string, passing through fields and (optional) direction. Allow sorting on properties of the DTO,
+not on entity properties.
+
+Showed during demo.
+
+#### Paging
+
+Page via the query string, passing through page number & page size. Page by default. Limit the page size. Return pagination metadata in a response header.
+
+Showed during demo.
+
 ### Status Codes and Creating Responses
 
+> Status codes are inspected by the consumer to know how the request went.
+
+Status codes tell the consumer:
+
+- if the request worked out as expected,
+- if something went wrong, who's responsible it is.
+
+> Using the correct status codes is essential.
+
+Common status codes:
+
+- 200 OK,
+- 201 Created,
+- 204 No Content,
+- 400 Bad Request,
+- 401 Unauthorized,
+- 403 Forbidden,
+- 404 Not Found,
+- 405 Method Not Allowed,
+- 500 Internal Server Error.
+
 ### Creating Correct API Responses
+
+From a minimal API endpoint we can return a `string`, any other type of object or `IResult` based types:
+
+- `Results.X` (where `X` is for example `Ok`),
+- `TypedResults.X` (preferred if you need to know why, watch [this](https://youtu.be/BmwJkoPnF24) vide for more information).
 
 ## Manipulating Resources
 
