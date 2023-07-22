@@ -1,11 +1,12 @@
 using AutoMapper;
+using Contacts.Api.Domain;
 using Contacts.Api.DTOs;
 using Contacts.Api.Infrastructure;
 using Contacts.Api.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
-using Contacts.Api.Domain;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,16 +48,43 @@ app.UseCors();
 
 // contacts:
 
+const int DefaultContactsPageNumber = 1;
+const int DefaultContactsPageSize = 10;
+const int MaxContactsPageSize = 50;
+
 // GET api/contacts
 // GET api/contacts?lastName=Nowak
 // GET api/contacts?search=ski
 // GET api/contacts?search=ski&orderBy=LastName&desc=true
 app.MapGet("/api/contacts", async ([FromQuery] string? lastName, [FromQuery] string? search, [FromQuery] string? orderBy, [FromQuery] bool? desc,
-    [FromServices] IContactsRepository repository, [FromServices] IMapper mapper) =>
+    int? pageNumber, int? pageSize,
+    [FromServices] IContactsRepository repository, [FromServices] IMapper mapper, HttpContext context) =>
 {
-    var contacts = await repository.GetContactsAsync(lastName, search, orderBy, desc);
+    if (pageNumber is null)
+    {
+        pageNumber = DefaultContactsPageNumber;
+    }
+
+    if (pageSize is null)
+    {
+        pageSize = DefaultContactsPageSize;
+    }
+
+    if (pageNumber <= 0)
+    {
+        return Results.BadRequest();
+    }
+
+    if (pageSize > MaxContactsPageSize)
+    {
+        pageSize = MaxContactsPageSize;
+    }
+
+    var (contacts, paginationMetadata) = await repository.GetContactsAsync(lastName, search, orderBy, desc, (int)pageNumber, (int)pageSize);
 
     var contactsDto = mapper.Map<IEnumerable<ContactDto>>(contacts);
+
+    context.Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
 
     return TypedResults.Ok(contactsDto);
 });
@@ -78,7 +106,7 @@ app.MapGet("/api/contacts/{id:int}", async ([FromRoute] int id,
 }).WithName("GetContact");
 
 // POST api/contacts
-app.MapPost("/api/contacts", async ([FromBody] ContactForCreationDto contactForCreationDto, 
+app.MapPost("/api/contacts", async ([FromBody] ContactForCreationDto contactForCreationDto,
     [FromServices] IContactsRepository repository, [FromServices] IMapper mapper) =>
 {
     var contact = mapper.Map<Contact>(contactForCreationDto);
@@ -108,7 +136,7 @@ app.MapPut("/api/contacts/{id:int}", async ([FromRoute] int id, [FromBody] Conta
 });
 
 // DELETE api/contacts/1
-app.MapDelete("/api/contacts/{id:int}", async ([FromRoute] int id, 
+app.MapDelete("/api/contacts/{id:int}", async ([FromRoute] int id,
     [FromServices] IContactsRepository repository) =>
 {
     var success = await repository.DeleteContactAsync(id);
@@ -124,7 +152,7 @@ app.MapDelete("/api/contacts/{id:int}", async ([FromRoute] int id,
 // phones
 
 // GET api/contacts/1/phones
-app.MapGet("/api/contacts/{contactId:int}/phones", ([FromRoute] int contactId, 
+app.MapGet("/api/contacts/{contactId:int}/phones", ([FromRoute] int contactId,
     [FromServices] ContactsDbContext dbContext) =>
 {
     var contact = dbContext.Contacts.Include(c => c.Phones)

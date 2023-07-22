@@ -21,6 +21,9 @@ GET {{baseUri}}/contacts?search=ski HTTP/1.1
 ### Get all contacts and sort by lastName descending
 GET {{baseUri}}/contacts?orderBy=lastName&desc=true HTTP/1.1
 
+### Get contacts with paging
+GET {{baseUri}}/contacts?pageNumber=2&pageSize=1 HTTP/1.1
+
 ### Get a contact by id
 GET {{baseUri}}/contacts/{{id}} HTTP/1.1
 

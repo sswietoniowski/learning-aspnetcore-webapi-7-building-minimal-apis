@@ -187,6 +187,8 @@ As you can see, it looks identical to the one that would be used in controllers.
 
 We can use _route parameters_ (`{contactId:int}`) to gather input via the URI. These parameters will be bound to same-name parameters in the handler signature. We can also use _route constraint_ (`int` in this case) to specify the type of parameters.
 
+More on that [here](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/routing?view=aspnetcore-7.0).
+
 ### Why You Shouldn’t Expose the Entity Model
 
 #### Entity model
@@ -331,7 +333,114 @@ Showed in previous example.
 
 Page via the query string, passing through page number & page size. Page by default. Limit the page size. Return pagination metadata in a response header.
 
-Showed during demo.
+Example:
+
+```csharp
+// GET api/contacts
+// GET api/contacts?lastName=Nowak
+// GET api/contacts?search=ski
+// GET api/contacts?search=ski&orderBy=LastName&desc=true
+app.MapGet("/api/contacts", async ([FromQuery] string? lastName, [FromQuery] string? search, [FromQuery] string? orderBy, [FromQuery] bool? desc,
+    int? pageNumber, int? pageSize,
+    [FromServices] IContactsRepository repository, [FromServices] IMapper mapper, HttpContext context) =>
+{
+    if (pageNumber is null)
+    {
+        pageNumber = DefaultContactsPageNumber;
+    }
+
+    if (pageSize is null)
+    {
+        pageSize = DefaultContactsPageSize;
+    }
+
+    if (pageNumber <= 0)
+    {
+        return Results.BadRequest();
+    }
+
+    if (pageSize > MaxContactsPageSize)
+    {
+        pageSize = MaxContactsPageSize;
+    }
+
+    var (contacts, paginationMetadata) = await repository.GetContactsAsync(lastName, search, orderBy, desc, (int)pageNumber, (int)pageSize);
+
+    var contactsDto = mapper.Map<IEnumerable<ContactDto>>(contacts);
+
+    context.Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
+
+    return TypedResults.Ok(contactsDto);
+});
+```
+
+That would work provided that we have `PaginationMetadata` class:
+
+```csharp
+public class PaginationMetadata
+{
+    public int TotalItemCount { get; init; }
+    public int TotalPageCount { get; init; }
+    public int PageSize { get; init; }
+    public int CurrentPage { get; init; }
+
+    public PaginationMetadata(int totalItemCount, int pageSize, int currentPage)
+    {
+        TotalItemCount = totalItemCount;
+        PageSize = pageSize;
+        CurrentPage = currentPage;
+        TotalPageCount = (int)Math.Ceiling(totalItemCount / (double)pageSize);
+    }
+}
+```
+
+and our `GetContactsAsync` method would look like this (it's been slightly modified):
+
+```csharp
+    public async Task<(IEnumerable<Contact>, PaginationMetadata)> GetContactsAsync(string? lastName, string? search, string? orderBy, bool? desc, int pageNumber, int pageSize)
+    {
+        var query = _dbContext.Contacts.AsQueryable();
+
+        // this solution is not as good as the one with the specification pattern
+
+        if (!string.IsNullOrWhiteSpace(lastName))
+        {
+            query = query.Where(c => c.LastName == lastName);
+        }
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query.Where(c => c.LastName.Contains(search));
+        }
+
+        var totalItemCount = await query.CountAsync();
+
+        if (!string.IsNullOrWhiteSpace(orderBy))
+        {
+            if (orderBy.Equals(nameof(Contact.LastName), StringComparison.OrdinalIgnoreCase))
+            {
+                query = desc == true ? query.OrderByDescending(c => c.LastName) : query.OrderBy(c => c.LastName);
+            }
+            else if (orderBy.Equals(nameof(Contact.FirstName), StringComparison.OrdinalIgnoreCase))
+            {
+                query = desc == true ? query.OrderByDescending(c => c.FirstName) : query.OrderBy(c => c.FirstName);
+            }
+            else if (orderBy.Equals(nameof(Contact.Email), StringComparison.OrdinalIgnoreCase))
+            {
+                query = desc == true ? query.OrderByDescending(c => c.Email) : query.OrderBy(c => c.Email);
+            }
+        }
+
+        var paginationMetadata = new PaginationMetadata(totalItemCount, pageSize, pageNumber);
+
+        var collectionToReturn = await query
+            .Skip(pageSize * (pageNumber - 1)) // must be last :-)!
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (collectionToReturn, paginationMetadata);
+    }
+```
 
 ### Status Codes and Creating Responses
 
