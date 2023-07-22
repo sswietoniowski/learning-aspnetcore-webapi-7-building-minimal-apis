@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using System.Text.Json;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -87,14 +88,14 @@ app.MapGet("/api/contacts", async ([FromQuery] string? lastName, [FromQuery] str
 });
 
 // GET api/contacts/1
-app.MapGet("/api/contacts/{id:int}", async ([FromRoute] int id,
+app.MapGet("/api/contacts/{id:int}", async Task<Results<Ok<Contact>, NotFound>> ([FromRoute] int id,
     [FromServices] IContactsRepository repository, [FromServices] IMapper mapper) =>
 {
     var contact = await repository.GetContactAsync(id);
 
     if (contact is null)
     {
-        return Results.NotFound();
+        return TypedResults.NotFound();
     }
 
     var contactDto = mapper.Map<ContactDto>(contact);

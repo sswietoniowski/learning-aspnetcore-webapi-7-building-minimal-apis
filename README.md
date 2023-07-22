@@ -280,8 +280,8 @@ All rules for selecting the binding source (from the most important to the least
 
 - explicit binding,
 - special types,
-- `BindingAsync`,
-- string or `TryParse`,
+- `BindingAsync` (custom binding),
+- string or `TryParse` (if the parameter is a string or nullable),
 - services,
 - request body.
 
@@ -470,7 +470,30 @@ Common status codes:
 From a minimal API endpoint we can return a `string`, any other type of object or `IResult` based types:
 
 - `Results.X` (where `X` is for example `Ok`),
-- `TypedResults.X` (preferred if you need to know why, watch [this](https://youtu.be/BmwJkoPnF24) vide for more information).
+- `TypedResults.X` (preferred if you need to know why, watch [this](https://youtu.be/BmwJkoPnF24) video for more information).
+
+If we know in advance what type of response we want to return, we can add that information to the handler signature, like so (`Task<Results<Ok<Contact>, NotFound>>` - as you can see we are returning either `Ok` or `NotFound`):
+
+```csharp
+app.MapGet("/api/contacts/{id:int}", async Task<Results<Ok<Contact>, NotFound>> ([FromRoute] int id,
+    [FromServices] IContactsRepository repository, [FromServices] IMapper mapper) =>
+{
+    var contact = await repository.GetContactAsync(id);
+
+    if (contact is null)
+    {
+        return TypedResults.NotFound();
+    }
+
+    var contactDto = mapper.Map<ContactDto>(contact);
+
+    return TypedResults.Ok(contactDto);
+}).WithName("GetContact");
+```
+
+What is worth noting is that we can now use `TypedResults.NotFound` instead of `Results.NotFound` (and other `Results` methods). Without the method signature we would have to use `Results.NotFound()`.
+
+This is the preferred way of returning responses from minimal APIs. In my example I decided to change only this one handler, but you should change all of them.
 
 ## Manipulating Resources
 
