@@ -47,11 +47,14 @@ app.UseCors();
 
 // contacts:
 
+// GET api/contacts
+// GET api/contacts?lastName=Nowak
 // GET api/contacts?search=ski
-app.MapGet("/api/contacts", async ([FromQuery] string? search,
+// GET api/contacts?search=ski&orderBy=LastName&desc=true
+app.MapGet("/api/contacts", async ([FromQuery] string? lastName, [FromQuery] string? search, [FromQuery] string? orderBy, [FromQuery] bool? desc,
     [FromServices] IContactsRepository repository, [FromServices] IMapper mapper) =>
 {
-    var contacts = await repository.GetContactsAsync(search);
+    var contacts = await repository.GetContactsAsync(lastName, search, orderBy, desc);
 
     var contactsDto = mapper.Map<IEnumerable<ContactDto>>(contacts);
 

@@ -546,6 +546,4 @@ Input validation is a common requirement for APIs:
 
 ## Summary
 
-```
-
-```
+Now you know how to build a minimal API in .NET 7.0.

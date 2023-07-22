@@ -12,13 +12,36 @@ public class ContactsRepository : IContactsRepository
         _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
     }
 
-    public async Task<IEnumerable<Contact>> GetContactsAsync(string? search)
+    public async Task<IEnumerable<Contact>> GetContactsAsync(string? lastName, string? search, string? orderBy, bool? desc)
     {
         var query = _dbContext.Contacts.AsQueryable();
+
+        // this solution is not as good as the one with the specification pattern
+
+        if (!string.IsNullOrWhiteSpace(lastName))
+        {
+            query = query.Where(c => c.LastName == lastName);
+        }
 
         if (!string.IsNullOrWhiteSpace(search))
         {
             query = query.Where(c => c.LastName.Contains(search));
+        }
+
+        if (!string.IsNullOrWhiteSpace(orderBy))
+        {
+            if (orderBy.Equals(nameof(Contact.LastName), StringComparison.OrdinalIgnoreCase))
+            {
+                query = desc == true ? query.OrderByDescending(c => c.LastName) : query.OrderBy(c => c.LastName);
+            }
+            else if (orderBy.Equals(nameof(Contact.FirstName), StringComparison.OrdinalIgnoreCase))
+            {
+                query = desc == true ? query.OrderByDescending(c => c.FirstName) : query.OrderBy(c => c.FirstName);
+            }
+            else if (orderBy.Equals(nameof(Contact.Email), StringComparison.OrdinalIgnoreCase))
+            {
+                query = desc == true ? query.OrderByDescending(c => c.Email) : query.OrderBy(c => c.Email);
+            }
         }
 
         return await query.ToListAsync();
