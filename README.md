@@ -132,8 +132,8 @@ One difference being that instead of using constructor injection, you can use ha
 // GET api/contacts/1/phones
 app.MapGet("/api/contacts/{contactId:int}/phones", (int contactId, ContactsDbContext dbContext) =>
 {
-var contact = dbContext.Contacts.Include(c => c.Phones)
-.FirstOrDefault(c => c.Id == contactId);
+    var contact = dbContext.Contacts.Include(c => c.Phones)
+        .FirstOrDefault(c => c.Id == contactId);
 
     if (contact is null)
     {
@@ -144,7 +144,6 @@ var contact = dbContext.Contacts.Include(c => c.Phones)
         .Select(p => new PhoneDto(p.Id, p.Number, p.Description));
 
     return Results.Ok(phonesDto);
-
 });
 ```
 
@@ -167,7 +166,7 @@ We should use HTTP methods as intended, that improves overall reliability of you
 
 Different components in you architecture will rely on correct use of the HTTP standard:
 
-- don't introduce potential inefficiencies,
+- don't introduce potential inefficiencies (for example caching won't work correctly if you use `POST` instead of `GET`),
 - don't introduce potential bugs.
 
 Reference: [RFC9110](https://datatracker.ietf.org/doc/html/rfc9110).
