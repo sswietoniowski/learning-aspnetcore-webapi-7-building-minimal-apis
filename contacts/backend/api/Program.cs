@@ -88,7 +88,7 @@ app.MapGet("/api/contacts", async ([FromQuery] string? lastName, [FromQuery] str
 });
 
 // GET api/contacts/1
-app.MapGet("/api/contacts/{id:int}", async Task<Results<Ok<Contact>, NotFound>> ([FromRoute] int id,
+app.MapGet("/api/contacts/{id:int}", async Task<Results<Ok<ContactDto>, NotFound>> ([FromRoute] int id,
     [FromServices] IContactsRepository repository, [FromServices] IMapper mapper) =>
 {
     var contact = await repository.GetContactAsync(id);

@@ -472,10 +472,10 @@ From a minimal API endpoint we can return a `string`, any other type of object o
 - `Results.X` (where `X` is for example `Ok`),
 - `TypedResults.X` (preferred if you need to know why, watch [this](https://youtu.be/BmwJkoPnF24) video for more information).
 
-If we know in advance what type of response we want to return, we can add that information to the handler signature, like so (`Task<Results<Ok<Contact>, NotFound>>` - as you can see we are returning either `Ok` or `NotFound`):
+If we know in advance what type of response we want to return, we can add that information to the handler signature, like so (`Task<Results<Ok<ContactDto>, NotFound>>` - as you can see we are returning either `Ok` or `NotFound`):
 
 ```csharp
-app.MapGet("/api/contacts/{id:int}", async Task<Results<Ok<Contact>, NotFound>> ([FromRoute] int id,
+app.MapGet("/api/contacts/{id:int}", async Task<Results<Ok<ContactDto>, NotFound>> ([FromRoute] int id,
     [FromServices] IContactsRepository repository, [FromServices] IMapper mapper) =>
 {
     var contact = await repository.GetContactAsync(id);
