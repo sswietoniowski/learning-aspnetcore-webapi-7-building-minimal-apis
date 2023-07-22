@@ -1,5 +1,8 @@
+using AutoMapper;
+using Contacts.Api.DTOs;
 using Contacts.Api.Infrastructure;
 using Contacts.Api.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
@@ -41,7 +44,36 @@ app.UseHttpsRedirection();
 
 app.UseCors();
 
-app.MapGet("/", () => "Hello Minimal APIs");
+// contacts:
+
+// GET api/contacts?search=ski
+app.MapGet("/api/contacts", async ([FromQuery] string? search, [FromServices] IContactsRepository repository, [FromServices] IMapper mapper) =>
+{
+    var contacts = await repository.GetContactsAsync(search);
+
+    var contactsDto = mapper.Map<IEnumerable<ContactDto>>(contacts);
+
+    return Results.Ok(contactsDto);
+});
+
+// phones
+
+// GET api/contacts/1/phones
+app.MapGet("/api/contacts/{contactId:int}/phones", ([FromRoute] int contactId, [FromServices] ContactsDbContext dbContext) =>
+{
+    var contact = dbContext.Contacts.Include(c => c.Phones)
+        .FirstOrDefault(c => c.Id == contactId);
+
+    if (contact is null)
+    {
+        return Results.NotFound();
+    }
+
+    var phonesDto = contact.Phones
+        .Select(p => new PhoneDto(p.Id, p.Number, p.Description));
+
+    return Results.Ok(phonesDto);
+});
 
 // recreate & migrate the database on each run, for demo purposes
 using var scope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();

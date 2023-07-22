@@ -14,12 +14,18 @@ Original course materials can be found [here](https://app.pluralsight.com/librar
   - [Introduction to ASP.NET Core Minimal APIs](#introduction-to-aspnet-core-minimal-apis)
   - [Learning About Core Concepts and Reading Resources](#learning-about-core-concepts-and-reading-resources)
     - [Dependency Injection in Minimal APIs](#dependency-injection-in-minimal-apis)
+      - [Inversion of Control (IoC)](#inversion-of-control-ioc)
+      - [Dependency Injection (DI)](#dependency-injection-di)
     - [Learning About Routing](#learning-about-routing)
     - [Working with Routing Templates](#working-with-routing-templates)
     - [Why You Shouldn’t Expose the Entity Model](#why-you-shouldnt-expose-the-entity-model)
+      - [Entity model](#entity-model)
+      - [DTO model](#dto-model)
     - [Adding the DTO Model and Using AutoMapper](#adding-the-dto-model-and-using-automapper)
     - [Parameter Binding](#parameter-binding)
     - [Modelling Common API Functionality](#modelling-common-api-functionality)
+      - [Filtering](#filtering)
+      - [Searching](#searching)
     - [Status Codes and Creating Responses](#status-codes-and-creating-responses)
     - [Creating Correct API Responses](#creating-correct-api-responses)
   - [Manipulating Resources](#manipulating-resources)
@@ -105,17 +111,196 @@ Basic information about core concepts.
 
 ### Dependency Injection in Minimal APIs
 
+#### Inversion of Control (IoC)
+
+> The **IoC** (Inversion of Control) pattern delegates the function of selecting a concrete implementation type for a class's dependencies to an external component.
+
+#### Dependency Injection (DI)
+
+> The **DI** pattern uses an object - the container - to initialize other objects, manage their lifetime, and provide the required dependencies to objects.
+
+I'm assuming that whoever reads this information knows how to inject dependencies in ASP.NET Core and how to build an API using controllers, so I'm only trying to point out the difference between the two approaches.
+
+As its older counterpart (that is controllers) minimal APIs are heavily using DI.
+
+One difference being that instead of using constructor injection, you can use handlers to inject dependencies, like so:
+
+```csharp
+// phones
+
+// GET api/contacts/1/phones
+app.MapGet("/api/contacts/{contactId:int}/phones", (int contactId, ContactsDbContext dbContext) =>
+{
+var contact = dbContext.Contacts.Include(c => c.Phones)
+.FirstOrDefault(c => c.Id == contactId);
+
+    if (contact is null)
+    {
+        return Results.NotFound();
+    }
+
+    var phonesDto = contact.Phones
+        .Select(p => new PhoneDto(p.Id, p.Number, p.Description));
+
+    return Results.Ok(phonesDto);
+
+});
+```
+
+In our case we are injecting `ContactsDbContext` into our handler. We can do that because (obviously) we've registered it in `Program.cs`.
+
 ### Learning About Routing
+
+> **Routing** is the process of matching an HTTP method & URI to a specific route handler.
+
+`app.MapAction` (where `Action` is the HTTP method), the process of routing is provided by an implementation of `IEndpointRouteBuilder`.
+
+We've got:
+
+- `MapGet`,
+- `MapPost`,
+- `MapPut,
+- `MapDelete`.
+
+We should use HTTP methods as intended, that improves overall reliability of your system.
+
+Different components in you architecture will rely on correct use of the HTTP standard:
+
+- don't introduce potential inefficiencies,
+- don't introduce potential bugs.
+
+Reference: [RFC9110](https://datatracker.ietf.org/doc/html/rfc9110).
 
 ### Working with Routing Templates
 
+Example of such route template was already presented:
+
+```csharp
+// GET api/contacts/1/phones
+app.MapGet("/api/contacts/{contactId:int}/phones", (int contactId, ContactsDbContext dbContext) =>
+{
+    // ...
+});
+```
+
+As you can see, it looks identical to the one that would be used in controllers.
+
+We can use _route parameters_ (`{contacId:int}`) to gather input via the URI. These parameters will be bound to same-name parameters in the handler signature. We can also use _route constraint_ (`int` in this case) to specify the type of parameters.
+
 ### Why You Shouldn’t Expose the Entity Model
+
+#### Entity model
+
+> **Entity model** a means to represent database rows as objects (object graphs).
+
+#### DTO model
+
+> **DTO model** a means to represent the data that's sent over the wire.
+
+You shouldn't expose the entity model because there could be potential differences between the entity model and the DTO model. For example, you could have a property in the entity model that you don't want to expose in the DTO model.
+
+> Keeping the entity and DTO model separate leads to more robust, reliably evolvable code.
+
+In general all the reasons for the separation of the two, that were true for controllers, are also true for minimal APIs.
 
 ### Adding the DTO Model and Using AutoMapper
 
+We can use AutoMapper to map between the entity model and the DTO model.
+
+Provided that I've already added required dependencies and mapper profiles, then I can use it in my handler like so:
+
+```csharp
+// contacts:
+
+// GET api/contacts?search=ski
+app.MapGet("/api/contacts", async ([FromQuery] string? search, IContactsRepository repository, IMapper mapper) =>
+{
+    var contacts = await repository.GetContactsAsync(search);
+
+    var contactsDto = mapper.Map<IEnumerable<ContactDto>>(contacts);
+
+    return Results.Ok(contactsDto);
+});
+```
+
 ### Parameter Binding
 
+_Parameter binding_ is the process of converting request data into strongly typed parameters that are expressed by route handlers.
+
+There are many binding sources:
+
+- route values (`[FromRoute]`),
+- query string (`[FromQuery]`),
+- header (`[FromHeader]`),
+- body (as JSON) (`[FromBody]`),
+- services provided by DI (`[FromServices]`),
+- custom.
+
+We can use binding attributes to be explicit about the biding source.
+
+Our previous code with explicit binding will look like this:
+
+```csharp
+// contacts:
+
+// GET api/contacts?search=ski
+app.MapGet("/api/contacts", async ([FromQuery] string? search, [FromServices] IContactsRepository repository, [FromServices] IMapper mapper) =>
+{
+  // ...
+});
+
+// phones
+
+// GET api/contacts/1/phones
+app.MapGet("/api/contacts/{contactId:int}/phones", ([FromRoute] int contactId, [FromServices] ContactsDbContext dbContext) =>
+{
+  // ...
+});
+```
+
+There are rules for selecting the binding source, explicit binding is used first, then special types are used.
+
+Those special types are:
+
+- `HttpContext`,
+- `HttpRequest` (`HttpContext.Request`),
+- `HttpResponse` (`HttpContext.Response`),
+- `ClaimsPrincipal` (`HttpContext.User`),
+- `CancellationToken` (`HttpContext.RequestAborted`),
+- `IFormFileCollection` (`HttpContext.Request.Form.Files`),
+- `IFormFile` (`HttpContext.Request.Form.Files[paramName]`),
+- `Stream` (`HttpContext.Request.Body`),
+- `PipeReader` (`HttpContext.Request.BodyReader`).
+
+All rules for selecting the binding source (from the most important to the least important):
+
+- explicit binding,
+- special types,
+- `BindingAsync`,
+- string or `TryParse`,
+- services,
+- request body.
+
 ### Modelling Common API Functionality
+
+There are some functionalities that most APIs would need.
+
+#### Filtering
+
+> Limiting a collection resource, taking into account a predicate.
+
+Filter via the query string, using name/value combinations for fields to filter on.
+
+Showed during demo.
+
+#### Searching
+
+> Searching for matching items in a collection based on a predefined set of rules..
+
+Search via the query string, passing through a value to search for. It's up to the API to decide what to search
+through and how to search.
+
+Showed during demo.
 
 ### Status Codes and Creating Responses
 
@@ -202,3 +387,7 @@ Basic information about core concepts.
 ### Describing API Security in Swagger
 
 ## Summary
+
+```
+
+```
