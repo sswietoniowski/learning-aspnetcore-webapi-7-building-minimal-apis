@@ -6,6 +6,9 @@
 ### Get all phones for a contact given the contact id
 GET {{baseUri}}/contacts/{{contactId}}/phones HTTP/1.1
 
+### Get a phone by id for a contact given the contact id
+GET {{baseUri}}/contacts/{{contactId}}/phones/{{phoneId}} HTTP/1.1
+
 ### Get all contacts
 GET {{baseUri}}/contacts HTTP/1.1
  

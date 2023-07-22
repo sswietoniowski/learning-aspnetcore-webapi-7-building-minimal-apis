@@ -138,6 +138,30 @@ app.MapGet("/api/contacts/{contactId:int}/phones", ([FromRoute] int contactId,
     return Results.Ok(phonesDto);
 });
 
+// GET api/contacts/1/phones/1
+app.MapGet("/api/contacts/{contactId:int}/phones/{phoneId:int}", ([FromRoute] int contactId, [FromRoute] int phoneId,
+    [FromServices] ContactsDbContext dbContext) =>
+{
+    var contact = dbContext.Contacts.Include(c => c.Phones)
+        .FirstOrDefault(c => c.Id == contactId);
+
+    if (contact is null)
+    {
+        return Results.NotFound();
+    }
+
+    var phone = contact.Phones.FirstOrDefault(p => p.Id == phoneId);
+
+    if (phone is null)
+    {
+        return Results.NotFound();
+    }
+
+    var phoneDto = new PhoneDto(phone.Id, phone.Number, phone.Description);
+
+    return Results.Ok(phoneDto);
+});
+
 // recreate & migrate the database on each run, for demo purposes
 using var scope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
 var dbContext = scope.ServiceProvider.GetRequiredService<ContactsDbContext>();
