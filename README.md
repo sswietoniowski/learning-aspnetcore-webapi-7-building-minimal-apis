@@ -660,7 +660,7 @@ This approach is quite useful when you have a lot of endpoints. More on that [he
 
 **Remarks:**
 
-> Content negotiation is not supported out of the box by minimal APIs (nor is it planned). If you need it, consider using controllers instead.
+> Content negotiation is not supported out of the box by minimal APIs (nor is it planned). If you need it, consider using controllers instead. If you want something like that check out [Carter](https://github.com/CarterCommunity/Carter).
 
 ### Validation in Minimal APIs
 
@@ -670,7 +670,7 @@ Input validation is a common requirement for APIs:
 
 **Remarks:**
 
-> Validation is not supported out of the box by minimal APIs (nor is it planned). If you need it, consider using controllers instead. Alternatively you can use [FluentValidation](https://github.com/FluentValidation/FluentValidation) library.
+> Validation is not supported out of the box by minimal APIs (nor is it planned). If you need it, consider using controllers instead. Alternatively you can use [FluentValidation](https://github.com/FluentValidation/FluentValidation), [MiniValidation](https://github.com/DamianEdwards/MiniValidation) or [o9d-aspnet](https://github.com/benfoster/o9d-aspnet) libraries.
 
 ## Structuring Your Minimal API
 
