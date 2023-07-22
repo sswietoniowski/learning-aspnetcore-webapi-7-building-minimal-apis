@@ -1,11 +1,39 @@
 @baseUri = http://localhost:5000/api
+@id = 1
 @contactId = 1
+@phoneId = 1
 
 ### Get all phones for a contact given the contact id
-GET {{baseUri}}/contacts/{{contactId}}/phones
+GET {{baseUri}}/contacts/{{contactId}}/phones HTTP/1.1
 
 ### Get all contacts
-GET {{baseUri}}/contacts
-
+GET {{baseUri}}/contacts HTTP/1.1
+ 
 ### Get all contacts with name containing 'ski'
-GET {{baseUri}}/contacts?search=ski
+GET {{baseUri}}/contacts?search=ski HTTP/1.1
+
+### Get a contact by id
+GET {{baseUri}}/contacts/{{id}} HTTP/1.1
+
+### Create a new contact
+POST {{baseUri}}/contacts HTTP/1.1
+Content-Type: application/json
+
+{
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "jdoe@unknown.com"
+}
+
+### Update a contact
+PUT {{baseUri}}/contacts/{{id}} HTTP/1.1
+Content-Type: application/json
+
+{
+    "firstName": "Jan",
+    "lastName": "Nowak",
+    "email": "jkowalski@u.pl"
+}
+
+### Delete a contact
+DELETE {{baseUri}}/contacts/{{id}} HTTP/1.1

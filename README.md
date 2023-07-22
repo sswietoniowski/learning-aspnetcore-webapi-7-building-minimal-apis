@@ -32,8 +32,7 @@ Original course materials can be found [here](https://app.pluralsight.com/librar
     - [Creating Correct API Responses](#creating-correct-api-responses)
   - [Manipulating Resources](#manipulating-resources)
     - [Routing, Revisited](#routing-revisited)
-    - [Creating a Resource](#creating-a-resource)
-    - [Generating Links](#generating-links)
+    - [Creating a Resource \& Generating Links](#creating-a-resource--generating-links)
     - [Updating a Resource](#updating-a-resource)
     - [Deleting a Resource](#deleting-a-resource)
     - [Grouping Resources](#grouping-resources)
@@ -225,6 +224,8 @@ app.MapGet("/api/contacts", async ([FromQuery] string? search, IContactsReposito
 });
 ```
 
+You might not notice but this handler is asynchronous. We can use `async` keyword in our handlers. It is preferred to use `async` handlers, because it allows us to use `await` keyword and exploit the benefits of asynchronous programming.
+
 ### Parameter Binding
 
 _Parameter binding_ is the process of converting request data into strongly typed parameters that are expressed by route handlers.
@@ -349,21 +350,137 @@ From a minimal API endpoint we can return a `string`, any other type of object o
 
 ## Manipulating Resources
 
+How to perform typical CRUD operations.
+
 ### Routing, Revisited
 
-### Creating a Resource
+Couple rules:
 
-### Generating Links
+- make sure the URLs make sense,
+- use nouns in URLs, not verbs,
+- don't mik plural and singular nouns.
+
+BTW do you know the difference between _URI_ and _URL_? If not look up [here](https://pl.wikipedia.org/wiki/Uniform_Resource_Identifier).
+
+> Naming guidelines are not technical limitations, but they keep your API contract clean and predictable.
+
+### Creating a Resource & Generating Links
+
+To create a resource we can use `MapPost` method, like so:
+
+```csharp
+// GET api/contacts/1
+app.MapGet("/api/contacts/{id:int}", async ([FromRoute] int id,
+    [FromServices] IContactsRepository repository, [FromServices] IMapper mapper) =>
+{
+    var contact = await repository.GetContactAsync(id);
+
+    if (contact is null)
+    {
+        return Results.NotFound();
+    }
+
+    var contactDto = mapper.Map<ContactDto>(contact);
+
+    return TypedResults.Ok(contactDto);
+}).WithName("GetContact");
+
+// POST api/contacts
+app.MapPost("/api/contacts", async ([FromBody] ContactForCreationDto contactForCreationDto,
+    [FromServices] IContactsRepository repository, [FromServices] IMapper mapper) =>
+{
+    var contact = mapper.Map<Contact>(contactForCreationDto);
+
+    await repository.CreateContactAsync(contact);
+
+    var contactDto = mapper.Map<ContactDto>(contact);
+
+    return Results.CreatedAtRoute("GetContact", new { id = contactDto.Id }, contactDto);
+});
+```
+
+I had to create first a `MapGet` method to be able to use `CreatedAtRoute` method. Look at use of `TypedResults.Ok` and `WithName` method.
+
+Things to keep in mind when creating a resource:
+
+- when working with parent/chid relationships, validate whether the parent exists,
+- don't use the same endpoint for creating one item & a collection of items (create a new endpoint instead: `/itemcollections`).
 
 ### Updating a Resource
 
+To update a resource we can use `MapPut` method, like so:
+
+```csharp
+// PUT api/contacts/1
+app.MapPut("/api/contacts/{id:int}", async ([FromRoute] int id, [FromBody] ContactForUpdateDto contactForUpdateDto,
+    [FromServices] IContactsRepository repository, [FromServices] IMapper mapper) =>
+{
+    var contact = mapper.Map<Contact>(contactForUpdateDto);
+    contact.Id = id;
+
+    var success = await repository.UpdateContactAsync(contact);
+
+    if (!success)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.NoContent();
+});
+```
+
+Things to keep in mind when updating a resource:
+
+- check if the resource exists, including hierarchical parents,
+- be careful when enabling `PUT` for collections (it's not a common practice & can be very destructive),
+- `PUT` is intended for `FULL` updates, `PATCH` is for partial updates.
+
+**Remarks:**
+
+> Change sets for `PATCH` requests are often described as a list of operations (`JsonPatchDocument`). There is
+> no support for this for minimal APIs...
+
 ### Deleting a Resource
+
+To delete a resource we can use `MapDelete` method, like so:
+
+```csharp
+// DELETE api/contacts/1
+app.MapDelete("/api/contacts/{id:int}", async ([FromRoute] int id,
+    [FromServices] IContactsRepository repository) =>
+{
+    var success = await repository.DeleteContactAsync(id);
+
+    if (!success)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.NoContent();
+});
+```
 
 ### Grouping Resources
 
+Showed during demo.
+
 ### Content Negotiation in Minimal APIs
 
+> **Content negotiation** is the process of selecting the best representation for a given response when there are multiple representations available.
+
+**Remarks:**
+
+> Content negotiation is not supported out of the box by minimal APIs (nor is it planned). If you need it, consider using controllers instead.
+
 ### Validation in Minimal APIs
+
+Input validation is a common requirement for APIs:
+
+- required fields, format, value & length restrictions, cross-field rules, ...
+
+**Remarks:**
+
+> Validation is not supported out of the box by minimal APIs (nor is it planned). If you need it, consider using controllers instead. Alternatively you can use [FluentValidation](https://github.com/FluentValidation/FluentValidation) library.
 
 ## Structuring Your Minimal API
 
