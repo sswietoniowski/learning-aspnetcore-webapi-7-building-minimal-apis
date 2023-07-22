@@ -160,7 +160,7 @@ We've got:
 
 - `MapGet`,
 - `MapPost`,
-- `MapPut,
+- `MapPut`,
 - `MapDelete`.
 
 We should use HTTP methods as intended, that improves overall reliability of your system.
@@ -186,7 +186,7 @@ app.MapGet("/api/contacts/{contactId:int}/phones", (int contactId, ContactsDbCon
 
 As you can see, it looks identical to the one that would be used in controllers.
 
-We can use _route parameters_ (`{contacId:int}`) to gather input via the URI. These parameters will be bound to same-name parameters in the handler signature. We can also use _route constraint_ (`int` in this case) to specify the type of parameters.
+We can use _route parameters_ (`{contactId:int}`) to gather input via the URI. These parameters will be bound to same-name parameters in the handler signature. We can also use _route constraint_ (`int` in this case) to specify the type of parameters.
 
 ### Why You Shouldn’t Expose the Entity Model
 
@@ -358,7 +358,7 @@ Couple rules:
 
 - make sure the URLs make sense,
 - use nouns in URLs, not verbs,
-- don't mik plural and singular nouns.
+- don't mix plural and singular nouns.
 
 BTW do you know the difference between _URI_ and _URL_? If not look up [here](https://pl.wikipedia.org/wiki/Uniform_Resource_Identifier).
 
