@@ -611,7 +611,7 @@ app.MapDelete("/api/contacts/{id:int}", async ([FromRoute] int id,
 
 Sometimes we need some form of organization for our endpoints. For that we can use grouping.
 
-My code before applying grouping can be found [here](https://github.com/sswietoniowski/learning-aspnetcore-webapi-7-building-minimal-apis/tree/57b47c31f8f20068fb9c25e8306c84d44e852463).
+My code before applying grouping (that is up to this point) can be found [here](https://github.com/sswietoniowski/learning-aspnetcore-webapi-7-building-minimal-apis/tree/57b47c31f8f20068fb9c25e8306c84d44e852463).
 
 To group resources we would need first to create our groups, like so:
 
