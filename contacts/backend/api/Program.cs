@@ -3,11 +3,11 @@ using Contacts.Api.Domain;
 using Contacts.Api.DTOs;
 using Contacts.Api.Infrastructure;
 using Contacts.Api.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using System.Text.Json;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +47,11 @@ app.UseHttpsRedirection();
 
 app.UseCors();
 
+// grouping endpoints
+
+var contactsEndpoints = app.MapGroup("/api/contacts");
+var phonesEndpoints = contactsEndpoints.MapGroup("/{contactId:int}/phones");
+
 // contacts:
 
 // ReSharper disable once InconsistentNaming
@@ -60,7 +65,7 @@ const int MaxContactsPageSize = 50;
 // GET api/contacts?lastName=Nowak
 // GET api/contacts?search=ski
 // GET api/contacts?search=ski&orderBy=LastName&desc=true
-app.MapGet("/api/contacts", async ([FromQuery] string? lastName, [FromQuery] string? search, [FromQuery] string? orderBy, [FromQuery] bool? desc,
+contactsEndpoints.MapGet("", async Task<Results<Ok<IEnumerable<ContactDto>>, BadRequest>> ([FromQuery] string? lastName, [FromQuery] string? search, [FromQuery] string? orderBy, [FromQuery] bool? desc,
     int? pageNumber, int? pageSize,
     [FromServices] IContactsRepository repository, [FromServices] IMapper mapper, HttpContext context) =>
 {
@@ -70,7 +75,7 @@ app.MapGet("/api/contacts", async ([FromQuery] string? lastName, [FromQuery] str
 
     if (pageNumber <= 0)
     {
-        return Results.BadRequest();
+        return TypedResults.BadRequest();
     }
 
     if (pageSize > MaxContactsPageSize)
@@ -88,7 +93,7 @@ app.MapGet("/api/contacts", async ([FromQuery] string? lastName, [FromQuery] str
 });
 
 // GET api/contacts/1
-app.MapGet("/api/contacts/{id:int}", async Task<Results<Ok<ContactDto>, NotFound>> ([FromRoute] int id,
+contactsEndpoints.MapGet("{id:int}", async Task<Results<Ok<ContactDto>, NotFound>> ([FromRoute] int id,
     [FromServices] IContactsRepository repository, [FromServices] IMapper mapper) =>
 {
     var contact = await repository.GetContactAsync(id);
@@ -104,7 +109,7 @@ app.MapGet("/api/contacts/{id:int}", async Task<Results<Ok<ContactDto>, NotFound
 }).WithName("GetContact");
 
 // POST api/contacts
-app.MapPost("/api/contacts", async ([FromBody] ContactForCreationDto contactForCreationDto,
+contactsEndpoints.MapPost("", async Task<CreatedAtRoute<ContactDto>> ([FromBody] ContactForCreationDto contactForCreationDto,
     [FromServices] IContactsRepository repository, [FromServices] IMapper mapper) =>
 {
     var contact = mapper.Map<Contact>(contactForCreationDto);
@@ -113,11 +118,11 @@ app.MapPost("/api/contacts", async ([FromBody] ContactForCreationDto contactForC
 
     var contactDto = mapper.Map<ContactDto>(contact);
 
-    return Results.CreatedAtRoute("GetContact", new { id = contactDto.Id }, contactDto);
+    return TypedResults.CreatedAtRoute(contactDto, "GetContact", new { id = contactDto.Id });
 });
 
 // PUT api/contacts/1
-app.MapPut("/api/contacts/{id:int}", async ([FromRoute] int id, [FromBody] ContactForUpdateDto contactForUpdateDto,
+contactsEndpoints.MapPut("{id:int}", async Task<Results<NoContent, NotFound>> ([FromRoute] int id, [FromBody] ContactForUpdateDto contactForUpdateDto,
     [FromServices] IContactsRepository repository, [FromServices] IMapper mapper) =>
 {
     var contact = mapper.Map<Contact>(contactForUpdateDto);
@@ -127,30 +132,30 @@ app.MapPut("/api/contacts/{id:int}", async ([FromRoute] int id, [FromBody] Conta
 
     if (!success)
     {
-        return Results.NotFound();
+        return TypedResults.NotFound();
     }
 
-    return Results.NoContent();
+    return TypedResults.NoContent();
 });
 
 // DELETE api/contacts/1
-app.MapDelete("/api/contacts/{id:int}", async ([FromRoute] int id,
+contactsEndpoints.MapDelete("{id:int}", async Task<Results<NoContent, NotFound>> ([FromRoute] int id,
     [FromServices] IContactsRepository repository) =>
 {
     var success = await repository.DeleteContactAsync(id);
 
     if (!success)
     {
-        return Results.NotFound();
+        return TypedResults.NotFound();
     }
 
-    return Results.NoContent();
+    return TypedResults.NoContent();
 });
 
 // phones
 
 // GET api/contacts/1/phones
-app.MapGet("/api/contacts/{contactId:int}/phones", ([FromRoute] int contactId,
+phonesEndpoints.MapGet("", Results<Ok<IEnumerable<PhoneDto>>, NotFound> ([FromRoute] int contactId,
     [FromServices] ContactsDbContext dbContext) =>
 {
     var contact = dbContext.Contacts.Include(c => c.Phones)
@@ -158,17 +163,17 @@ app.MapGet("/api/contacts/{contactId:int}/phones", ([FromRoute] int contactId,
 
     if (contact is null)
     {
-        return Results.NotFound();
+        return TypedResults.NotFound();
     }
 
     var phonesDto = contact.Phones
         .Select(p => new PhoneDto(p.Id, p.Number, p.Description));
 
-    return Results.Ok(phonesDto);
+    return TypedResults.Ok(phonesDto);
 });
 
 // GET api/contacts/1/phones/1
-app.MapGet("/api/contacts/{contactId:int}/phones/{phoneId:int}", ([FromRoute] int contactId, [FromRoute] int phoneId,
+phonesEndpoints.MapGet("{phoneId:int}", Results<Ok<PhoneDto>, NotFound> ([FromRoute] int contactId, [FromRoute] int phoneId,
     [FromServices] ContactsDbContext dbContext) =>
 {
     var contact = dbContext.Contacts.Include(c => c.Phones)
@@ -176,19 +181,19 @@ app.MapGet("/api/contacts/{contactId:int}/phones/{phoneId:int}", ([FromRoute] in
 
     if (contact is null)
     {
-        return Results.NotFound();
+        return TypedResults.NotFound();
     }
 
     var phone = contact.Phones.FirstOrDefault(p => p.Id == phoneId);
 
     if (phone is null)
     {
-        return Results.NotFound();
+        return TypedResults.NotFound();
     }
 
     var phoneDto = new PhoneDto(phone.Id, phone.Number, phone.Description);
 
-    return Results.Ok(phoneDto);
+    return TypedResults.Ok(phoneDto);
 });
 
 // recreate & migrate the database on each run, for demo purposes
