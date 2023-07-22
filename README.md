@@ -40,7 +40,12 @@ Original course materials can be found [here](https://app.pluralsight.com/librar
     - [Validation in Minimal APIs](#validation-in-minimal-apis)
   - [Structuring Your Minimal API](#structuring-your-minimal-api)
     - [Options for Structuring Minimal APIs](#options-for-structuring-minimal-apis)
-    - [Extending IEndpointRouteBuilder to Structure Your Minimal API](#extending-iendpointroutebuilder-to-structure-your-minimal-api)
+      - [Using Methods Instead of Inline Handlers](#using-methods-instead-of-inline-handlers)
+      - [Separating Handler Methods Out in Classes](#separating-handler-methods-out-in-classes)
+      - [Extending `IEndpointRouteBuilder` to Structure Your Minimal API](#extending-iendpointroutebuilder-to-structure-your-minimal-api)
+      - [Combint the Previous Approaches](#combint-the-previous-approaches)
+      - [3rd Party Libraries](#3rd-party-libraries)
+      - [Other Approaches](#other-approaches)
   - [Handling Exceptions and Logging](#handling-exceptions-and-logging)
     - [Handling Exceptions in Minimal APIs](#handling-exceptions-in-minimal-apis)
     - [Using the Developer Exception Page Middleware](#using-the-developer-exception-page-middleware)
@@ -676,21 +681,110 @@ Input validation is a common requirement for APIs:
 
 ## Structuring Your Minimal API
 
+Having all handlers in on file (`Program.cs`) is not a good idea. We can structure our minimal API in many different ways.
+
 ### Options for Structuring Minimal APIs
 
-### Extending IEndpointRouteBuilder to Structure Your Minimal API
+There are many options for structuring minimal APIs - we can combine them as we see fit.
+
+#### Using Methods Instead of Inline Handlers
+
+Improves maintainability and testability.
+
+Example:
+
+```csharp
+
+```
+
+#### Separating Handler Methods Out in Classes
+
+Cleans up the `Program.cs` file.
+
+Example:
+
+```csharp
+
+```
+
+#### Extending `IEndpointRouteBuilder` to Structure Your Minimal API
+
+Improves code structure.
+
+Example:
+
+```csharp
+
+```
+
+#### Combint the Previous Approaches
+
+Improves testability, maintainability and overall code structure.
+
+Example:
+
+```csharp
+
+```
+
+#### 3rd Party Libraries
+
+There are many 3rd party libraries that can help you structure your minimal API.
+
+#### Other Approaches
+
+Because there is no built-in support for structuring minimal APIs, you can use any approach you want,
+and many people came up with their own solutions. For example something like [this](https://youtu.be/Q_zXFeP-QNI).
 
 ## Handling Exceptions and Logging
 
+We need a way to handle exceptions and log them in our applications.
+
 ### Handling Exceptions in Minimal APIs
+
+> Handling exceptions is a common task for any ASP.NET Core application and it's not that different for minimal APIs.
 
 ### Using the Developer Exception Page Middleware
 
+_Developer Exception Page Middleware_ exposes stack traces for unhandled exceptions:
+
+- useful during development,
+- should **NOT** be used outside of a development environment.
+
+It is enabled by default when:
+
+- running in the development environment,
+- **AND** the app is set up with a call into `WebApplication.CreateBuilder` (which is the case for minimal APIs).
+
 ### Using the Exception Handler Middleware
+
+_Exception Handler Middleware_ produces an error payload without exposing stack traces:
+
+- useful when **NOT** working in a development environment,
+- handles & logs exceptions.
+
+It is **NOT** enabled by default:
+
+- enabled with a call into `app.UseExceptionHandler`.
 
 ### Improving Error Responses with Problem Details
 
+Provided via `IProblemDetailsService`. Default implementation is included with ASP.NET Core.
+
+Effects of enabling the default problem details service:
+
+- the developer exception page middleware will automatically generate a problem details response,
+- the exception handler middleware will automatically generate a problem details response,
+- the status code page middleware can be configured to generate problem details responses for empty bodies (e.g.: 400, 404, ...).
+
 ### Logging in Minimal APIs
+
+> Not different from "regular" ASP.NET Core applications.
+
+To use it:
+
+- configure a `Logger`,
+- inject it to log where needed.
 
 ## Implementing Business Logic with Endpoint Filters
 
