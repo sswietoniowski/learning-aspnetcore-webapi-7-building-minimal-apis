@@ -654,6 +654,8 @@ phonesEndpoints.MapGet("", Results<Ok<IEnumerable<PhoneDto>>, NotFound> ([FromRo
 
 This approach is quite useful when you have a lot of endpoints. More on that [here](https://youtu.be/8c73j7RHoSQ).
 
+My code after refactoring to use grouping can be found [here](https://github.com/sswietoniowski/learning-aspnetcore-webapi-7-building-minimal-apis/tree/3b5f1e45b15e656c7ca69cff00c1a427df6c6002).
+
 ### Content Negotiation in Minimal APIs
 
 > **Content negotiation** is the process of selecting the best representation for a given response when there are multiple representations available.
