@@ -48,8 +48,11 @@ app.UseCors();
 
 // contacts:
 
+// ReSharper disable once InconsistentNaming
 const int DefaultContactsPageNumber = 1;
+// ReSharper disable once InconsistentNaming
 const int DefaultContactsPageSize = 10;
+// ReSharper disable once InconsistentNaming
 const int MaxContactsPageSize = 50;
 
 // GET api/contacts
@@ -60,15 +63,9 @@ app.MapGet("/api/contacts", async ([FromQuery] string? lastName, [FromQuery] str
     int? pageNumber, int? pageSize,
     [FromServices] IContactsRepository repository, [FromServices] IMapper mapper, HttpContext context) =>
 {
-    if (pageNumber is null)
-    {
-        pageNumber = DefaultContactsPageNumber;
-    }
+    pageNumber ??= DefaultContactsPageNumber;
 
-    if (pageSize is null)
-    {
-        pageSize = DefaultContactsPageSize;
-    }
+    pageSize ??= DefaultContactsPageSize;
 
     if (pageNumber <= 0)
     {
