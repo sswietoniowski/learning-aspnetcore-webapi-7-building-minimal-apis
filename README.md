@@ -622,6 +622,38 @@ var contactsEndpoints = app.MapGroup("/api/contacts");
 var phonesEndpoints = contactsEndpoints.MapGroup("/{contactId:int}/phones");
 ```
 
+And then we can use it like so:
+
+```csharp
+// contacts:
+
+// ...
+contactsEndpoints.MapGet("", async Task<Results<Ok<IEnumerable<ContactDto>>, BadRequest>> ([FromQuery] string? lastName, [FromQuery] string? search, [FromQuery] string? orderBy, [FromQuery] bool? desc,
+    int? pageNumber, int? pageSize,
+    [FromServices] IContactsRepository repository, [FromServices] IMapper mapper, HttpContext context) =>
+{
+  // ...
+});
+
+contactsEndpoints.MapGet("{id:int}", async Task<Results<Ok<ContactDto>, NotFound>> ([FromRoute] int id,
+    [FromServices] IContactsRepository repository, [FromServices] IMapper mapper) =>
+{
+  // ...
+}).WithName("GetContact");
+
+// ...
+
+// phones
+
+phonesEndpoints.MapGet("", Results<Ok<IEnumerable<PhoneDto>>, NotFound> ([FromRoute] int contactId,
+    [FromServices] ContactsDbContext dbContext) =>
+{
+  // ...
+});
+```
+
+This approach is quite useful when you have a lot of endpoints. More on that [here](https://youtu.be/8c73j7RHoSQ).
+
 ### Content Negotiation in Minimal APIs
 
 > **Content negotiation** is the process of selecting the best representation for a given response when there are multiple representations available.
