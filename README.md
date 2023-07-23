@@ -996,7 +996,7 @@ Content-Length: 862
 ------------------------------------------------
 Content:
 System.NotImplementedException: This endpoint is not implemented yet!
-   at Program.<>c.<<Main>$>b__0_0() in D:\TMP\learning-aspnetcore-webapi-7-building-minimal-apis\contacts\backend\api\Program.cs:line 34
+   at Program.<>c.<<Main>$>b__0_0() in ...\contacts\backend\api\Program.cs:line 34
    at lambda_method29(Closure, Object, HttpContext)
    at Microsoft.AspNetCore.Routing.EndpointMiddleware.Invoke(HttpContext httpContext)
 --- End of stack trace from previous location ---
@@ -1113,16 +1113,73 @@ else
 }
 ```
 
+To see proper results be sure to add `Accept` to your request:
+
+```http
+### Call images endpoint to receive an error
+GET {{baseUri}}/images HTTP/1.1
+Accept: application/json
+```
+
 Now I get the following response (`Development` environment):
 
 ```text
-TODO:
+HTTP/1.1 500 Internal Server Error
+Connection: close
+Content-Type: application/problem+json
+Date: Sun, 23 Jul 2023 14:36:15 GMT
+Server: Kestrel
+Transfer-Encoding: chunked
+
+{
+  "type": "https://tools.ietf.org/html/rfc7231#section-6.6.1",
+  "title": "System.NotImplementedException",
+  "status": 500,
+  "detail": "This endpoint is not implemented yet!",
+  "exception": {
+    "details": "System.NotImplementedException: This endpoint is not implemented yet!\r\n   at Program.<>c.<<Main>$>b__0_0() in ...\\contacts\\backend\\api\\Program.cs:line 49\r\n   at lambda_method29(Closure, Object, HttpContext)\r\n   at Microsoft.AspNetCore.Routing.EndpointMiddleware.Invoke(HttpContext httpContext)\r\n--- End of stack trace from previous location ---\r\n   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context)",
+    "headers": {
+      "Accept": [
+        "application/json"
+      ],
+      "Connection": [
+        "close"
+      ],
+      "Host": [
+        "localhost:5001"
+      ],
+      "User-Agent": [
+        "vscode-restclient"
+      ],
+      "Accept-Encoding": [
+        "gzip, deflate"
+      ]
+    },
+    "path": "/api/images",
+    "endpoint": "HTTP: GET /api/images",
+    "routeValues": {}
+  }
+}
 ```
 
 And (`Production` environment):
 
 ```text
-TODO:
+HTTP/1.1 500 Internal Server Error
+Connection: close
+Content-Type: application/problem+json
+Date: Sun, 23 Jul 2023 14:40:13 GMT
+Server: Kestrel
+Cache-Control: no-cache,no-store
+Expires: -1
+Pragma: no-cache
+Transfer-Encoding: chunked
+
+{
+  "type": "https://tools.ietf.org/html/rfc7231#section-6.6.1",
+  "title": "An error occurred while processing your request.",
+  "status": 500
+}
 ```
 
 If you're more interested read [this](https://www.strathweb.com/2022/08/problem-details-responses-everywhere-with-asp-net-core-and-net-7/) and [this](https://meysamhadeli.com/problem-details-in-dotnet-7/) articles.

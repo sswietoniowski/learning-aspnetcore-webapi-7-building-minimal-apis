@@ -53,3 +53,7 @@ DELETE {{baseUri}}/contacts/{{id}} HTTP/1.1
 ### Call images endpoint to receive an error
 GET {{baseUri}}/images HTTP/1.1
 
+### Call images endpoint to receive an error (with Accept header)
+GET {{baseUri}}/images HTTP/1.1
+Accept: application/json
+
