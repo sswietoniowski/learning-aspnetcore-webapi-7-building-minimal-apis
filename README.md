@@ -926,6 +926,8 @@ It is enabled by default when:
 - running in the development environment,
 - **AND** the app is set up with a call into `WebApplication.CreateBuilder` (which is the case for minimal APIs).
 
+
+
 ### Using the Exception Handler Middleware
 
 _Exception Handler Middleware_ produces an error payload without exposing stack traces:

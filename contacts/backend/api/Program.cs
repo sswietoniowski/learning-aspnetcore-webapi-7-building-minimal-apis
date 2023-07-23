@@ -1,31 +1,13 @@
 using Contacts.Api.Configurations.Extensions;
 using Contacts.Api.Infrastructure;
-using Contacts.Api.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<ContactsDbContext>(options =>
-{
-    options.UseSqlite(builder.Configuration.GetConnectionString("ContactsDb"));
-    options.EnableSensitiveDataLogging(builder.Environment.IsDevelopment());
-});
+builder.AddPersistence();
+builder.AddMapper();
 
-builder.Services.AddScoped<IContactsRepository, ContactsRepository>();
-
-builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
-
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policyBuilder =>
-    {
-        policyBuilder
-            .WithOrigins("http://localhost:3000", "http://localhost:5173")
-            .AllowAnyMethod()
-            .AllowAnyHeader();
-    });
-});
+builder.AddCors();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
