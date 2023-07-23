@@ -721,7 +721,7 @@ This way we can test our handler separately.
 
 Cleans up the `Program.cs` file.
 
-First I created a new directory `Handlers`, then in it I created a new file `ContactsHandler.cs`:
+First I created a new directory `Handlers`, then in it I created a new file `ContactsHandlers.cs`:
 
 ```csharp
 using AutoMapper;
@@ -776,7 +776,7 @@ public static class ContactsHandlers
 }
 ```
 
-Analogically I created a new file `PhonesHandler.cs` (code omitted for brevity).
+Analogically I created a new file `PhonesHandlers.cs` (code omitted for brevity).
 
 Then I modified my `Program.cs` file to use those handlers:
 
