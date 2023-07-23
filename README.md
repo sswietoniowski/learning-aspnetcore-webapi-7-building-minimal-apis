@@ -926,7 +926,39 @@ It is enabled by default when:
 - running in the development environment,
 - **AND** the app is set up with a call into `WebApplication.CreateBuilder` (which is the case for minimal APIs).
 
+To test out how exception handling mechanism works, I've added a new handler:
 
+```csharp
+// images -> and endpoint that throws exception (just for demo purposes)
+app.MapGet("/api/images", string () => throw new NotImplementedException("This endpoint is not implemented yet!"));
+```
+
+To see different ways of handling exceptions, I've changed `launchSettings.json` like so:
+
+```json
+  "profiles": {
+    "Contacts.WebAPI": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "launchUrl": "",
+      "applicationUrl": "https://localhost:5001;http://localhost:5000",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": false,
+      "launchUrl": "",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production"
+      }
+    }
+  }
+```
+
+`Contacts.WebAPI` will run in development environment, `IIS Express` will run in production environment.
 
 ### Using the Exception Handler Middleware
 

@@ -30,6 +30,9 @@ app.RegisterContactsEndpoints();
 // phones
 app.RegisterPhonesEndpoints();
 
+// images -> and endpoint that throws exception (just for demo purposes)
+app.MapGet("/api/images", string () => throw new NotImplementedException("This endpoint is not implemented yet!"));
+
 // recreate & migrate the database on each run, for demo purposes
 using var scope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
 var dbContext = scope.ServiceProvider.GetRequiredService<ContactsDbContext>();

@@ -49,3 +49,6 @@ Content-Type: application/json
 
 ### Delete a contact
 DELETE {{baseUri}}/contacts/{{id}} HTTP/1.1
+
+### Call images endpoint to receive an error
+GET {{baseUri}}/images HTTP/1.1
