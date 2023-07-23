@@ -1136,6 +1136,31 @@ To use it:
 - configure a `Logger`,
 - inject it to log where needed.
 
+Example:
+
+```csharp
+public static class PhonesHandlers
+{
+    public static Results<Ok<IEnumerable<PhoneDto>>, NotFound> GetPhones([FromRoute] int contactId,
+        [FromServices] ContactsDbContext dbContext, ILogger<PhoneDto> logger)
+    {
+        logger.LogInformation("Getting phones for contact with id {contactId}", contactId);
+
+        // ...
+    }
+
+    public static Results<Ok<PhoneDto>, NotFound> GetPhone([FromRoute] int contactId, [FromRoute] int phoneId,
+        [FromServices] ContactsDbContext dbContext, ILogger<PhoneDto> logger)
+    {
+        logger.LogInformation("Getting phone with id {phoneId} for contact with id {contactId}", phoneId, contactId);
+
+        // ...
+    }
+}
+```
+
+I had to add `ILogger<PhoneDto> logger` parameter to my handler methods and then I had to add `logger.LogInformation` calls to them. For some it might be strange that I'm using `PhoneDto` as a generic parameter, I did so out of necessity (I couldn't use `ILogger` as a generic parameter or use `PhonesHandlers` as a generic parameter because it's a static class).
+
 ## Implementing Business Logic with Endpoint Filters
 
 ### Filters for Minimal APIs
