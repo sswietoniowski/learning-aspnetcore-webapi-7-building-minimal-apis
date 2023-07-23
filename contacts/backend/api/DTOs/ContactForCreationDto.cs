@@ -2,7 +2,4 @@
 
 namespace Contacts.Api.DTOs;
 
-public record ContactForCreationDto(
-    [Required][MaxLength(32)] string FirstName,
-    [Required][StringLength(64)] string LastName,
-    [EmailAddress] string Email);
+public record ContactForCreationDto(string FirstName, string LastName, string Email);

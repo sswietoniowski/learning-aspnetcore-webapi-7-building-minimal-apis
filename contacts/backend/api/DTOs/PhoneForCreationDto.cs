@@ -2,6 +2,4 @@
 
 namespace Contacts.Api.DTOs;
 
-public record PhoneForCreationDto(
-    [Required][MaxLength(16)] string Number,
-    string Description);
+public record PhoneForCreationDto(string Number, string Description);
