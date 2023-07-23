@@ -1,13 +1,8 @@
-using AutoMapper;
-using Contacts.Api.Domain;
-using Contacts.Api.DTOs;
 using Contacts.Api.Infrastructure;
 using Contacts.Api.Infrastructure.Repositories;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
-using System.Text.Json;
+using Contacts.Api.Handlers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,157 +53,27 @@ var phonesEndpoints = contactsEndpoints.MapGroup("/{contactId:int}/phones");
 // GET api/contacts?lastName=Nowak
 // GET api/contacts?search=ski
 // GET api/contacts?search=ski&orderBy=LastName&desc=true
-contactsEndpoints.MapGet("", GetContactsHandler);
-
-// ReSharper disable once InconsistentNaming
-const int DefaultContactsPageNumber = 1;
-// ReSharper disable once InconsistentNaming
-const int DefaultContactsPageSize = 10;
-// ReSharper disable once InconsistentNaming
-const int MaxContactsPageSize = 50;
-
-async Task<Results<Ok<IEnumerable<ContactDto>>, BadRequest>> GetContactsHandler([FromQuery] string? lastName, [FromQuery] string? search, [FromQuery] string? orderBy, [FromQuery] bool? desc,
-    int? pageNumber, int? pageSize,
-    [FromServices] IContactsRepository repository, [FromServices] IMapper mapper, HttpContext context)
-{
-    pageNumber ??= DefaultContactsPageNumber;
-
-    pageSize ??= DefaultContactsPageSize;
-
-    if (pageNumber <= 0)
-    {
-        return TypedResults.BadRequest();
-    }
-
-    if (pageSize > MaxContactsPageSize)
-    {
-        pageSize = MaxContactsPageSize;
-    }
-
-    var (contacts, paginationMetadata) = await repository.GetContactsAsync(lastName, search, orderBy, desc, (int)pageNumber, (int)pageSize);
-
-    var contactsDto = mapper.Map<IEnumerable<ContactDto>>(contacts);
-
-    context.Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
-
-    return TypedResults.Ok(contactsDto);
-}
+contactsEndpoints.MapGet("", ContactsHandlers.GetContacts);
 
 // GET api/contacts/1
-contactsEndpoints.MapGet("{id:int}", GetContactHandler).WithName("GetContact");
-
-async Task<Results<Ok<ContactDto>, NotFound>> GetContactHandler([FromRoute] int id,
-    [FromServices] IContactsRepository repository, [FromServices] IMapper mapper)
-{
-    var contact = await repository.GetContactAsync(id);
-
-    if (contact is null)
-    {
-        return TypedResults.NotFound();
-    }
-
-    var contactDto = mapper.Map<ContactDto>(contact);
-
-    return TypedResults.Ok(contactDto);
-}
+contactsEndpoints.MapGet("{id:int}", ContactsHandlers.GetContact).WithName("GetContact");
 
 // POST api/contacts
-contactsEndpoints.MapPost("", CreateContactHandler);
-
-async Task<CreatedAtRoute<ContactDto>> CreateContactHandler([FromBody] ContactForCreationDto contactForCreationDto,
-    [FromServices] IContactsRepository repository, [FromServices] IMapper mapper)
-{
-    var contact = mapper.Map<Contact>(contactForCreationDto);
-
-    await repository.CreateContactAsync(contact);
-
-    var contactDto = mapper.Map<ContactDto>(contact);
-
-    return TypedResults.CreatedAtRoute(contactDto, "GetContact", new { id = contactDto.Id });
-}
+contactsEndpoints.MapPost("", ContactsHandlers.CreateContact);
 
 // PUT api/contacts/1
-contactsEndpoints.MapPut("{id:int}", UpdateContactHandler);
-
-async Task<Results<NoContent, NotFound>> UpdateContactHandler([FromRoute] int id, [FromBody] ContactForUpdateDto contactForUpdateDto,
-    [FromServices] IContactsRepository repository, [FromServices] IMapper mapper)
-{
-    var contact = mapper.Map<Contact>(contactForUpdateDto);
-    contact.Id = id;
-
-    var success = await repository.UpdateContactAsync(contact);
-
-    if (!success)
-    {
-        return TypedResults.NotFound();
-    }
-
-    return TypedResults.NoContent();
-}
+contactsEndpoints.MapPut("{id:int}", ContactsHandlers.UpdateContact);
 
 // DELETE api/contacts/1
-contactsEndpoints.MapDelete("{id:int}", DeleteContactHandler);
-
-async Task<Results<NoContent, NotFound>> DeleteContactHandler([FromRoute] int id,
-    [FromServices] IContactsRepository repository)
-{
-    var success = await repository.DeleteContactAsync(id);
-
-    if (!success)
-    {
-        return TypedResults.NotFound();
-    }
-
-    return TypedResults.NoContent();
-}
+contactsEndpoints.MapDelete("{id:int}", ContactsHandlers.DeleteContact);
 
 // phones
 
 // GET api/contacts/1/phones
-phonesEndpoints.MapGet("", GetPhonesHandler);
-
-Results<Ok<IEnumerable<PhoneDto>>, NotFound> GetPhonesHandler([FromRoute] int contactId,
-        [FromServices] ContactsDbContext dbContext)
-{
-    var contact = dbContext.Contacts.Include(c => c.Phones)
-        .FirstOrDefault(c => c.Id == contactId);
-
-    if (contact is null)
-    {
-        return TypedResults.NotFound();
-    }
-
-    var phonesDto = contact.Phones
-        .Select(p => new PhoneDto(p.Id, p.Number, p.Description));
-
-    return TypedResults.Ok(phonesDto);
-}
+phonesEndpoints.MapGet("", PhonesHandlers.GetPhones);
 
 // GET api/contacts/1/phones/1
-phonesEndpoints.MapGet("{phoneId:int}", GetPhoneHandler);
-
-Results<Ok<PhoneDto>, NotFound> GetPhoneHandler([FromRoute] int contactId, [FromRoute] int phoneId,
-    [FromServices] ContactsDbContext dbContext)
-{
-    var contact = dbContext.Contacts.Include(c => c.Phones)
-        .FirstOrDefault(c => c.Id == contactId);
-
-    if (contact is null)
-    {
-        return TypedResults.NotFound();
-    }
-
-    var phone = contact.Phones.FirstOrDefault(p => p.Id == phoneId);
-
-    if (phone is null)
-    {
-        return TypedResults.NotFound();
-    }
-
-    var phoneDto = new PhoneDto(phone.Id, phone.Number, phone.Description);
-
-    return TypedResults.Ok(phoneDto);
-}
+phonesEndpoints.MapGet("{phoneId:int}", PhonesHandlers.GetPhone);
 
 // recreate & migrate the database on each run, for demo purposes
 using var scope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();

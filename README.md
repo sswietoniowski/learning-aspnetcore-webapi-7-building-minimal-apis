@@ -715,15 +715,107 @@ async Task<Results<Ok<IEnumerable<ContactDto>>, BadRequest>> GetContactsHandler(
 }
 ```
 
+This way we can test our handler separately.
+
 #### Separating Handler Methods Out in Classes
 
 Cleans up the `Program.cs` file.
 
-Example:
+First I created a new directory `Handlers`, then in it I created a new file `ContactsHandler.cs`:
 
 ```csharp
+using AutoMapper;
+using Contacts.Api.DTOs;
+using Contacts.Api.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
+using Contacts.Api.Domain;
 
+namespace Contacts.Api.Handlers;
+
+public static class ContactsHandlers
+{
+    // ReSharper disable once InconsistentNaming
+    const int DefaultContactsPageNumber = 1;
+    // ReSharper disable once InconsistentNaming
+    const int DefaultContactsPageSize = 10;
+    // ReSharper disable once InconsistentNaming
+    const int MaxContactsPageSize = 50;
+
+    public static async Task<Results<Ok<IEnumerable<ContactDto>>, BadRequest>> GetContacts([FromQuery] string? lastName, [FromQuery] string? search, [FromQuery] string? orderBy, [FromQuery] bool? desc,
+        int? pageNumber, int? pageSize,
+        [FromServices] IContactsRepository repository, [FromServices] IMapper mapper, HttpContext context)
+    {
+        // ...
+    }
+
+    public static async Task<Results<Ok<ContactDto>, NotFound>> GetContact([FromRoute] int id,
+        [FromServices] IContactsRepository repository, [FromServices] IMapper mapper)
+    {
+        // ...
+    }
+
+    public static async Task<CreatedAtRoute<ContactDto>> CreateContact([FromBody] ContactForCreationDto contactForCreationDto,
+        [FromServices] IContactsRepository repository, [FromServices] IMapper mapper)
+    {
+        // ...
+    }
+
+    public static async Task<Results<NoContent, NotFound>> UpdateContact([FromRoute] int id, [FromBody] ContactForUpdateDto contactForUpdateDto,
+        [FromServices] IContactsRepository repository, [FromServices] IMapper mapper)
+    {
+        // ...
+    }
+
+    public static async Task<Results<NoContent, NotFound>> DeleteContact([FromRoute] int id,
+        [FromServices] IContactsRepository repository)
+    {
+        // ...
+    }
+}
 ```
+
+Analogically I created a new file `PhonesHandler.cs` (code omitted for brevity).
+
+Then I modified my `Program.cs` file to use those handlers:
+
+```csharp
+// grouping endpoints
+
+var contactsEndpoints = app.MapGroup("/api/contacts");
+var phonesEndpoints = contactsEndpoints.MapGroup("/{contactId:int}/phones");
+
+// contacts:
+
+// GET api/contacts
+// GET api/contacts?lastName=Nowak
+// GET api/contacts?search=ski
+// GET api/contacts?search=ski&orderBy=LastName&desc=true
+contactsEndpoints.MapGet("", ContactsHandlers.GetContacts);
+
+// GET api/contacts/1
+contactsEndpoints.MapGet("{id:int}", ContactsHandlers.GetContact).WithName("GetContact");
+
+// POST api/contacts
+contactsEndpoints.MapPost("", ContactsHandlers.CreateContact);
+
+// PUT api/contacts/1
+contactsEndpoints.MapPut("{id:int}", ContactsHandlers.UpdateContact);
+
+// DELETE api/contacts/1
+contactsEndpoints.MapDelete("{id:int}", ContactsHandlers.DeleteContact);
+
+// phones
+
+// GET api/contacts/1/phones
+phonesEndpoints.MapGet("", PhonesHandlers.GetPhones);
+
+// GET api/contacts/1/phones/1
+phonesEndpoints.MapGet("{phoneId:int}", PhonesHandlers.GetPhone);
+```
+
+It is a lot cleaner now.
 
 #### Extending `IEndpointRouteBuilder` to Structure Your Minimal API
 
