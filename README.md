@@ -43,7 +43,7 @@ Original course materials can be found [here](https://app.pluralsight.com/librar
       - [Using Methods Instead of Inline Handlers](#using-methods-instead-of-inline-handlers)
       - [Separating Handler Methods Out in Classes](#separating-handler-methods-out-in-classes)
       - [Extending `IEndpointRouteBuilder` to Structure Your Minimal API](#extending-iendpointroutebuilder-to-structure-your-minimal-api)
-      - [Combint the Previous Approaches](#combint-the-previous-approaches)
+      - [Combine the Previous Approaches](#combine-the-previous-approaches)
       - [3rd Party Libraries](#3rd-party-libraries)
       - [Other Approaches](#other-approaches)
   - [Handling Exceptions and Logging](#handling-exceptions-and-logging)
@@ -717,7 +717,7 @@ Example:
 
 ```
 
-#### Combint the Previous Approaches
+#### Combine the Previous Approaches
 
 Improves testability, maintainability and overall code structure.
 
