@@ -1003,7 +1003,3 @@ To use it:
 ## Summary
 
 Now you know how to build a minimal API in .NET 7.0.
-
-```
-
-```
