@@ -821,11 +821,66 @@ It is a lot cleaner now.
 
 Improves code structure.
 
-Example:
+This time I first created a new directory `Extensions` inside `Configurations` directory and then in it I created a new file `EndpointRouteBuilderExtensions`:
 
 ```csharp
+using Contacts.Api.Handlers;
 
+namespace Contacts.Api.Configurations.Extensions;
+
+public static class EndpointRouteBuilderExtensions
+{
+    public static void RegisterContactsEndpoints(this IEndpointRouteBuilder app)
+    {
+        var contactsEndpoints = app.MapGroup("/api/contacts");
+
+        // GET api/contacts
+        // GET api/contacts?lastName=Nowak
+        // GET api/contacts?search=ski
+        // GET api/contacts?search=ski&orderBy=LastName&desc=true
+        contactsEndpoints.MapGet("", ContactsHandlers.GetContacts);
+
+        // GET api/contacts/1
+        contactsEndpoints.MapGet("{id:int}", ContactsHandlers.GetContact).WithName("GetContact");
+
+        // POST api/contacts
+        contactsEndpoints.MapPost("", ContactsHandlers.CreateContact);
+
+        // PUT api/contacts/1
+        contactsEndpoints.MapPut("{id:int}", ContactsHandlers.UpdateContact);
+
+        // DELETE api/contacts/1
+        contactsEndpoints.MapDelete("{id:int}", ContactsHandlers.DeleteContact);
+    }
+
+    public static void RegisterPhonesEndpoints(this IEndpointRouteBuilder app)
+    {
+        var phonesEndpoints = app.MapGroup("/api/contacts/{contactId:int}/phones");
+
+        // GET api/contacts/1/phones
+        phonesEndpoints.MapGet("", PhonesHandlers.GetPhones);
+
+        // GET api/contacts/1/phones/1
+        phonesEndpoints.MapGet("{phoneId:int}", PhonesHandlers.GetPhone);
+    }
+}
 ```
+
+Now my `Program.cs` file looks like this:
+
+```csharp
+// ...
+
+// contacts:
+app.RegisterContactsEndpoints();
+
+// phones
+app.RegisterPhonesEndpoints();
+
+// ...
+```
+
+It is a lot simpler now.
 
 #### Combine the Previous Approaches
 

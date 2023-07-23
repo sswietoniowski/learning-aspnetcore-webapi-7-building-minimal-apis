@@ -1,0 +1,40 @@
+﻿using Contacts.Api.Handlers;
+
+namespace Contacts.Api.Configurations.Extensions;
+
+public static class EndpointRouteBuilderExtensions
+{
+    public static void RegisterContactsEndpoints(this IEndpointRouteBuilder app)
+    {
+        var contactsEndpoints = app.MapGroup("/api/contacts");
+
+        // GET api/contacts
+        // GET api/contacts?lastName=Nowak
+        // GET api/contacts?search=ski
+        // GET api/contacts?search=ski&orderBy=LastName&desc=true
+        contactsEndpoints.MapGet("", ContactsHandlers.GetContacts);
+
+        // GET api/contacts/1
+        contactsEndpoints.MapGet("{id:int}", ContactsHandlers.GetContact).WithName("GetContact");
+
+        // POST api/contacts
+        contactsEndpoints.MapPost("", ContactsHandlers.CreateContact);
+
+        // PUT api/contacts/1
+        contactsEndpoints.MapPut("{id:int}", ContactsHandlers.UpdateContact);
+
+        // DELETE api/contacts/1
+        contactsEndpoints.MapDelete("{id:int}", ContactsHandlers.DeleteContact);
+    }
+
+    public static void RegisterPhonesEndpoints(this IEndpointRouteBuilder app)
+    {
+        var phonesEndpoints = app.MapGroup("/api/contacts/{contactId:int}/phones");
+
+        // GET api/contacts/1/phones
+        phonesEndpoints.MapGet("", PhonesHandlers.GetPhones);
+
+        // GET api/contacts/1/phones/1
+        phonesEndpoints.MapGet("{phoneId:int}", PhonesHandlers.GetPhone);
+    }
+}
