@@ -1044,9 +1044,9 @@ if (app.Environment.IsDevelopment())
 else
 {
     // should be added at the beginning of the pipeline
-    app.UseExceptionHandler(builder =>
+    app.UseExceptionHandler(applicationBuilder =>
     {
-        builder.Run(
+        applicationBuilder.Run(
             async context =>
             {
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
@@ -1080,6 +1080,8 @@ An unexpected problem happened!
 
 ### Improving Error Responses with Problem Details
 
+Our error responses are not very informative. We can improve them by using [_Problem Details_](https://datatracker.ietf.org/doc/html/rfc7807).
+
 Provided via `IProblemDetailsService`. Default implementation is included with ASP.NET Core.
 
 Effects of enabling the default problem details service:
@@ -1087,6 +1089,43 @@ Effects of enabling the default problem details service:
 - the developer exception page middleware will automatically generate a problem details response,
 - the exception handler middleware will automatically generate a problem details response,
 - the status code page middleware can be configured to generate problem details responses for empty bodies (e.g.: 400, 404, ...).
+
+To enable it I've changed `Program.cs` like so:
+
+```csharp
+builder.Services.AddProblemDetails();
+
+// ...
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+
+    // no need to add it explicitly, it's added by default
+    app.UseDeveloperExceptionPage();
+}
+else
+{
+    // should be added at the beginning of the pipeline
+    app.UseExceptionHandler();
+    app.UseStatusCodePages();
+}
+```
+
+Now I get the following response (`Development` environment):
+
+```text
+TODO:
+```
+
+And (`Production` environment):
+
+```text
+TODO:
+```
+
+If you're more interested read [this](https://www.strathweb.com/2022/08/problem-details-responses-everywhere-with-asp-net-core-and-net-7/) and [this](https://meysamhadeli.com/problem-details-in-dotnet-7/) articles.
 
 ### Logging in Minimal APIs
 

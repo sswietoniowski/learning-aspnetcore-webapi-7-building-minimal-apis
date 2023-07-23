@@ -1,7 +1,5 @@
-using System.Net;
 using Contacts.Api.Configurations.Extensions;
 using Contacts.Api.Infrastructure;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,27 +12,27 @@ builder.AddCors();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddControllers();
+// add problem details
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
+
+app.MapControllers();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    // no need to add it explicitly, it's added by default
+    app.UseDeveloperExceptionPage();
 }
 else
 {
     // should be added at the beginning of the pipeline
-    app.UseExceptionHandler(builder =>
-    {
-        builder.Run(
-            async context =>
-            {
-                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                context.Response.ContentType = "text/html";
-
-                await context.Response.WriteAsync("An unexpected problem happened!");
-            });
-    });
+    app.UseExceptionHandler();
+    app.UseStatusCodePages();
 }
 
 app.UseHttpsRedirection();
