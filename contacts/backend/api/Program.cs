@@ -54,6 +54,12 @@ var phonesEndpoints = contactsEndpoints.MapGroup("/{contactId:int}/phones");
 
 // contacts:
 
+// GET api/contacts
+// GET api/contacts?lastName=Nowak
+// GET api/contacts?search=ski
+// GET api/contacts?search=ski&orderBy=LastName&desc=true
+contactsEndpoints.MapGet("", GetContactsHandler);
+
 // ReSharper disable once InconsistentNaming
 const int DefaultContactsPageNumber = 1;
 // ReSharper disable once InconsistentNaming
@@ -61,13 +67,9 @@ const int DefaultContactsPageSize = 10;
 // ReSharper disable once InconsistentNaming
 const int MaxContactsPageSize = 50;
 
-// GET api/contacts
-// GET api/contacts?lastName=Nowak
-// GET api/contacts?search=ski
-// GET api/contacts?search=ski&orderBy=LastName&desc=true
-contactsEndpoints.MapGet("", async Task<Results<Ok<IEnumerable<ContactDto>>, BadRequest>> ([FromQuery] string? lastName, [FromQuery] string? search, [FromQuery] string? orderBy, [FromQuery] bool? desc,
+async Task<Results<Ok<IEnumerable<ContactDto>>, BadRequest>> GetContactsHandler([FromQuery] string? lastName, [FromQuery] string? search, [FromQuery] string? orderBy, [FromQuery] bool? desc,
     int? pageNumber, int? pageSize,
-    [FromServices] IContactsRepository repository, [FromServices] IMapper mapper, HttpContext context) =>
+    [FromServices] IContactsRepository repository, [FromServices] IMapper mapper, HttpContext context)
 {
     pageNumber ??= DefaultContactsPageNumber;
 
@@ -90,11 +92,13 @@ contactsEndpoints.MapGet("", async Task<Results<Ok<IEnumerable<ContactDto>>, Bad
     context.Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
 
     return TypedResults.Ok(contactsDto);
-});
+}
 
 // GET api/contacts/1
-contactsEndpoints.MapGet("{id:int}", async Task<Results<Ok<ContactDto>, NotFound>> ([FromRoute] int id,
-    [FromServices] IContactsRepository repository, [FromServices] IMapper mapper) =>
+contactsEndpoints.MapGet("{id:int}", GetContactHandler).WithName("GetContact");
+
+async Task<Results<Ok<ContactDto>, NotFound>> GetContactHandler([FromRoute] int id,
+    [FromServices] IContactsRepository repository, [FromServices] IMapper mapper)
 {
     var contact = await repository.GetContactAsync(id);
 
@@ -106,11 +110,13 @@ contactsEndpoints.MapGet("{id:int}", async Task<Results<Ok<ContactDto>, NotFound
     var contactDto = mapper.Map<ContactDto>(contact);
 
     return TypedResults.Ok(contactDto);
-}).WithName("GetContact");
+}
 
 // POST api/contacts
-contactsEndpoints.MapPost("", async Task<CreatedAtRoute<ContactDto>> ([FromBody] ContactForCreationDto contactForCreationDto,
-    [FromServices] IContactsRepository repository, [FromServices] IMapper mapper) =>
+contactsEndpoints.MapPost("", CreateContactHandler);
+
+async Task<CreatedAtRoute<ContactDto>> CreateContactHandler([FromBody] ContactForCreationDto contactForCreationDto,
+    [FromServices] IContactsRepository repository, [FromServices] IMapper mapper)
 {
     var contact = mapper.Map<Contact>(contactForCreationDto);
 
@@ -119,11 +125,13 @@ contactsEndpoints.MapPost("", async Task<CreatedAtRoute<ContactDto>> ([FromBody]
     var contactDto = mapper.Map<ContactDto>(contact);
 
     return TypedResults.CreatedAtRoute(contactDto, "GetContact", new { id = contactDto.Id });
-});
+}
 
 // PUT api/contacts/1
-contactsEndpoints.MapPut("{id:int}", async Task<Results<NoContent, NotFound>> ([FromRoute] int id, [FromBody] ContactForUpdateDto contactForUpdateDto,
-    [FromServices] IContactsRepository repository, [FromServices] IMapper mapper) =>
+contactsEndpoints.MapPut("{id:int}", UpdateContactHandler);
+
+async Task<Results<NoContent, NotFound>> UpdateContactHandler([FromRoute] int id, [FromBody] ContactForUpdateDto contactForUpdateDto,
+    [FromServices] IContactsRepository repository, [FromServices] IMapper mapper)
 {
     var contact = mapper.Map<Contact>(contactForUpdateDto);
     contact.Id = id;
@@ -136,11 +144,13 @@ contactsEndpoints.MapPut("{id:int}", async Task<Results<NoContent, NotFound>> ([
     }
 
     return TypedResults.NoContent();
-});
+}
 
 // DELETE api/contacts/1
-contactsEndpoints.MapDelete("{id:int}", async Task<Results<NoContent, NotFound>> ([FromRoute] int id,
-    [FromServices] IContactsRepository repository) =>
+contactsEndpoints.MapDelete("{id:int}", DeleteContactHandler);
+
+async Task<Results<NoContent, NotFound>> DeleteContactHandler([FromRoute] int id,
+    [FromServices] IContactsRepository repository)
 {
     var success = await repository.DeleteContactAsync(id);
 
@@ -150,13 +160,15 @@ contactsEndpoints.MapDelete("{id:int}", async Task<Results<NoContent, NotFound>>
     }
 
     return TypedResults.NoContent();
-});
+}
 
 // phones
 
 // GET api/contacts/1/phones
-phonesEndpoints.MapGet("", Results<Ok<IEnumerable<PhoneDto>>, NotFound> ([FromRoute] int contactId,
-    [FromServices] ContactsDbContext dbContext) =>
+phonesEndpoints.MapGet("", GetPhonesHandler);
+
+Results<Ok<IEnumerable<PhoneDto>>, NotFound> GetPhonesHandler([FromRoute] int contactId,
+        [FromServices] ContactsDbContext dbContext)
 {
     var contact = dbContext.Contacts.Include(c => c.Phones)
         .FirstOrDefault(c => c.Id == contactId);
@@ -170,11 +182,13 @@ phonesEndpoints.MapGet("", Results<Ok<IEnumerable<PhoneDto>>, NotFound> ([FromRo
         .Select(p => new PhoneDto(p.Id, p.Number, p.Description));
 
     return TypedResults.Ok(phonesDto);
-});
+}
 
 // GET api/contacts/1/phones/1
-phonesEndpoints.MapGet("{phoneId:int}", Results<Ok<PhoneDto>, NotFound> ([FromRoute] int contactId, [FromRoute] int phoneId,
-    [FromServices] ContactsDbContext dbContext) =>
+phonesEndpoints.MapGet("{phoneId:int}", GetPhoneHandler);
+
+Results<Ok<PhoneDto>, NotFound> GetPhoneHandler([FromRoute] int contactId, [FromRoute] int phoneId,
+    [FromServices] ContactsDbContext dbContext)
 {
     var contact = dbContext.Contacts.Include(c => c.Phones)
         .FirstOrDefault(c => c.Id == contactId);
@@ -194,7 +208,7 @@ phonesEndpoints.MapGet("{phoneId:int}", Results<Ok<PhoneDto>, NotFound> ([FromRo
     var phoneDto = new PhoneDto(phone.Id, phone.Number, phone.Description);
 
     return TypedResults.Ok(phoneDto);
-});
+}
 
 // recreate & migrate the database on each run, for demo purposes
 using var scope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();

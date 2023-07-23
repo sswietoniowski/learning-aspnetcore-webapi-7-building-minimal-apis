@@ -691,10 +691,28 @@ There are many options for structuring minimal APIs - we can combine them as we 
 
 Improves maintainability and testability.
 
-Example:
+Example for a single handler:
 
 ```csharp
+// GET api/contacts
+// GET api/contacts?lastName=Nowak
+// GET api/contacts?search=ski
+// GET api/contacts?search=ski&orderBy=LastName&desc=true
+contactsEndpoints.MapGet("", GetContactsHandler);
 
+// ReSharper disable once InconsistentNaming
+const int DefaultContactsPageNumber = 1;
+// ReSharper disable once InconsistentNaming
+const int DefaultContactsPageSize = 10;
+// ReSharper disable once InconsistentNaming
+const int MaxContactsPageSize = 50;
+
+async Task<Results<Ok<IEnumerable<ContactDto>>, BadRequest>> GetContactsHandler([FromQuery] string? lastName, [FromQuery] string? search, [FromQuery] string? orderBy, [FromQuery] bool? desc,
+    int? pageNumber, int? pageSize,
+    [FromServices] IContactsRepository repository, [FromServices] IMapper mapper, HttpContext context)
+{
+    // ...
+}
 ```
 
 #### Separating Handler Methods Out in Classes
