@@ -914,18 +914,6 @@ We need a way to handle exceptions and log them in our applications.
 
 > Handling exceptions is a common task for any ASP.NET Core application and it's not that different for minimal APIs.
 
-### Using the Developer Exception Page Middleware
-
-_Developer Exception Page Middleware_ exposes stack traces for unhandled exceptions:
-
-- useful during development,
-- should **NOT** be used outside of a development environment.
-
-It is enabled by default when:
-
-- running in the development environment,
-- **AND** the app is set up with a call into `WebApplication.CreateBuilder` (which is the case for minimal APIs).
-
 To test out how exception handling mechanism works, I've added a new handler:
 
 ```csharp
@@ -936,6 +924,16 @@ app.MapGet("/api/images", string () => throw new NotImplementedException("This e
 To see different ways of handling exceptions, I've changed `launchSettings.json` like so:
 
 ```json
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:5000",
+      "sslPort": 5001
+    }
+  },
   "profiles": {
     "Contacts.WebAPI": {
       "commandName": "Project",
@@ -956,9 +954,73 @@ To see different ways of handling exceptions, I've changed `launchSettings.json`
       }
     }
   }
+}
 ```
 
 `Contacts.WebAPI` will run in development environment, `IIS Express` will run in production environment.
+
+If you encounter an error while trying to use IIS Express, read [this](https://stackoverflow.com/questions/64880715/https-error-in-asp-net-core-app-running-on-iisexpress-pr-connect-reset-error)
+and consider using `Tests\RegenerateIISExpressCertificate.ps1` script.
+
+### Using the Developer Exception Page Middleware
+
+_Developer Exception Page Middleware_ exposes stack traces for unhandled exceptions:
+
+- useful during development,
+- should **NOT** be used outside of a development environment.
+
+It is enabled by default when:
+
+- running in the development environment (`"ASPNETCORE_ENVIRONMENT": "Development"`),
+- **AND** the app is set up with a call into `WebApplication.CreateBuilder` (which is the case for minimal APIs).
+
+My call (using built-in REST support - `Test\contacts.http`):
+
+```http
+### Call images endpoint to receive an error
+GET {{baseUri}}/images HTTP/1.1
+```
+
+Sample response in development mode:
+
+```text
+Response time: 3573 ms
+Status code: InternalServerError (500)
+Transfer-Encoding: chunked
+Date: Sun, 23 Jul 2023 10:17:59 GMT
+Server: Kestrel
+
+Content-Type: text/plain; charset=utf-8
+Content-Length: 862
+
+------------------------------------------------
+Content:
+System.NotImplementedException: This endpoint is not implemented yet!
+   at Program.<>c.<<Main>$>b__0_0() in D:\TMP\learning-aspnetcore-webapi-7-building-minimal-apis\contacts\backend\api\Program.cs:line 34
+   at lambda_method29(Closure, Object, HttpContext)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.Invoke(HttpContext httpContext)
+--- End of stack trace from previous location ---
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context)
+
+HEADERS
+=======
+Connection: keep-alive
+Host: localhost:5001
+User-Agent: Visual-Studio/17.6.5+33829.357 WebToolsExtension/17.6.326.62524
+```
+
+and in production mode:
+
+```text
+Response time: 3413 ms
+Status code: InternalServerError (500)
+Date: Sun, 23 Jul 2023 10:35:38 GMT
+Server: Kestrel
+
+Content-Length: 0
+```
 
 ### Using the Exception Handler Middleware
 
