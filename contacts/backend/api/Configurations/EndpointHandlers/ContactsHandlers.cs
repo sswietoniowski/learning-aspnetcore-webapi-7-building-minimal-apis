@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using Contacts.Api.Domain;
 
-namespace Contacts.Api.Handlers;
+namespace Contacts.Api.Configurations.EndpointHandlers;
 
 public static class ContactsHandlers
 {
@@ -17,7 +17,7 @@ public static class ContactsHandlers
     // ReSharper disable once InconsistentNaming
     const int MaxContactsPageSize = 50;
 
-    public static async Task<Results<Ok<IEnumerable<ContactDto>>, BadRequest>> GetContacts([FromQuery] string? lastName, [FromQuery] string? search, [FromQuery] string? orderBy, [FromQuery] bool? desc,
+    public static async Task<Results<Ok<IEnumerable<ContactDto>>, BadRequest>> GetContactsAsync([FromQuery] string? lastName, [FromQuery] string? search, [FromQuery] string? orderBy, [FromQuery] bool? desc,
         int? pageNumber, int? pageSize,
         [FromServices] IContactsRepository repository, [FromServices] IMapper mapper, HttpContext context)
     {
@@ -44,7 +44,7 @@ public static class ContactsHandlers
         return TypedResults.Ok(contactsDto);
     }
 
-    public static async Task<Results<Ok<ContactDto>, NotFound>> GetContact([FromRoute] int id,
+    public static async Task<Results<Ok<ContactDto>, NotFound>> GetContactAsync([FromRoute] int id,
         [FromServices] IContactsRepository repository, [FromServices] IMapper mapper)
     {
         var contact = await repository.GetContactAsync(id);
@@ -59,7 +59,7 @@ public static class ContactsHandlers
         return TypedResults.Ok(contactDto);
     }
 
-    public static async Task<CreatedAtRoute<ContactDto>> CreateContact([FromBody] ContactForCreationDto contactForCreationDto,
+    public static async Task<CreatedAtRoute<ContactDto>> CreateContactAsync([FromBody] ContactForCreationDto contactForCreationDto,
         [FromServices] IContactsRepository repository, [FromServices] IMapper mapper)
     {
         var contact = mapper.Map<Contact>(contactForCreationDto);
@@ -71,7 +71,7 @@ public static class ContactsHandlers
         return TypedResults.CreatedAtRoute(contactDto, "GetContact", new { id = contactDto.Id });
     }
 
-    public static async Task<Results<NoContent, NotFound>> UpdateContact([FromRoute] int id, [FromBody] ContactForUpdateDto contactForUpdateDto,
+    public static async Task<Results<NoContent, NotFound>> UpdateContactAsync([FromRoute] int id, [FromBody] ContactForUpdateDto contactForUpdateDto,
         [FromServices] IContactsRepository repository, [FromServices] IMapper mapper)
     {
         var contact = mapper.Map<Contact>(contactForUpdateDto);
@@ -87,7 +87,7 @@ public static class ContactsHandlers
         return TypedResults.NoContent();
     }
 
-    public static async Task<Results<NoContent, NotFound>> DeleteContact([FromRoute] int id,
+    public static async Task<Results<NoContent, NotFound>> DeleteContactAsync([FromRoute] int id,
         [FromServices] IContactsRepository repository)
     {
         var success = await repository.DeleteContactAsync(id);

@@ -1,4 +1,4 @@
-﻿using Contacts.Api.Handlers;
+﻿using Contacts.Api.Configurations.EndpointHandlers;
 
 namespace Contacts.Api.Configurations.Extensions;
 
@@ -12,19 +12,19 @@ public static class EndpointRouteBuilderExtensions
         // GET api/contacts?lastName=Nowak
         // GET api/contacts?search=ski
         // GET api/contacts?search=ski&orderBy=LastName&desc=true
-        contactsEndpoints.MapGet("", ContactsHandlers.GetContacts);
+        contactsEndpoints.MapGet("", ContactsHandlers.GetContactsAsync);
 
         // GET api/contacts/1
-        contactsEndpoints.MapGet("{id:int}", ContactsHandlers.GetContact).WithName("GetContact");
+        contactsEndpoints.MapGet("{id:int}", ContactsHandlers.GetContactAsync).WithName("GetContact");
 
         // POST api/contacts
-        contactsEndpoints.MapPost("", ContactsHandlers.CreateContact);
+        contactsEndpoints.MapPost("", ContactsHandlers.CreateContactAsync);
 
         // PUT api/contacts/1
-        contactsEndpoints.MapPut("{id:int}", ContactsHandlers.UpdateContact);
+        contactsEndpoints.MapPut("{id:int}", ContactsHandlers.UpdateContactAsync);
 
         // DELETE api/contacts/1
-        contactsEndpoints.MapDelete("{id:int}", ContactsHandlers.DeleteContact);
+        contactsEndpoints.MapDelete("{id:int}", ContactsHandlers.DeleteContactAsync);
     }
 
     public static void RegisterPhonesEndpoints(this IEndpointRouteBuilder app)

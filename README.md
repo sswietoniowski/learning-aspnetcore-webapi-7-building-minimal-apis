@@ -886,15 +886,14 @@ It is a lot simpler now.
 
 Improves testability, maintainability and overall code structure.
 
-Example:
-
-```csharp
-
-```
+And that is exactly what I did. I combined all the previous approaches :-). My final version is little changed, I refactored my handler methods to use proper naming (I've added `Async` suffix to them - when applicable) and I've decided to change `Handlers`
+directory to `EndpointHandlers` and move it into `Configurations` directory. My final version can be found [here]().
 
 #### 3rd Party Libraries
 
 There are many 3rd party libraries that can help you structure your minimal API.
+
+For example you can use [Carter](https://github.com/CarterCommunity/Carter) library (it was already mentioned in the previous section).
 
 #### Other Approaches
 
@@ -998,3 +997,7 @@ To use it:
 ## Summary
 
 Now you know how to build a minimal API in .NET 7.0.
+
+```
+
+```

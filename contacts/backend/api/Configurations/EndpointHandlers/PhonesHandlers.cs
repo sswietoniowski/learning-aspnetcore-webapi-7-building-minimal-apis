@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Contacts.Api.Handlers;
+namespace Contacts.Api.Configurations.EndpointHandlers;
 
 public static class PhonesHandlers
 {
