@@ -1033,6 +1033,51 @@ It is **NOT** enabled by default:
 
 - enabled with a call into `app.UseExceptionHandler`.
 
+To use this middleware I've changed `Program.cs` like so:
+
+```csharp
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+else
+{
+    // should be added at the beginning of the pipeline
+    app.UseExceptionHandler(builder =>
+    {
+        builder.Run(
+            async context =>
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                context.Response.ContentType = "text/html";
+
+                await context.Response.WriteAsync("An unexpected problem happened!");
+            });
+    });
+}
+```
+
+And now I get the following response:
+
+```text
+Response time: 2625 ms
+Status code: InternalServerError (500)
+Pragma: no-cache
+Transfer-Encoding: chunked
+Cache-Control: no-store, no-cache
+Date: Sun, 23 Jul 2023 10:47:39 GMT
+Server: Kestrel
+
+Content-Type: text/html
+Expires: -1
+Content-Length: 31
+
+------------------------------------------------
+Content:
+An unexpected problem happened!
+```
+
 ### Improving Error Responses with Problem Details
 
 Provided via `IProblemDetailsService`. Default implementation is included with ASP.NET Core.
