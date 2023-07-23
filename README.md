@@ -886,8 +886,14 @@ It is a lot simpler now.
 
 Improves testability, maintainability and overall code structure.
 
-And that is exactly what I did. I combined all the previous approaches :-). My final version is little changed, I refactored my handler methods to use proper naming (I've added `Async` suffix to them - when applicable) and I've decided to change `Handlers`
-directory to `EndpointHandlers` and move it into `Configurations` directory. My final version can be found [here]().
+And that is exactly what I did.
+
+I combined all the previous approaches :-).
+
+My final version is little changed, I refactored my handler methods to use proper naming (I've added `Async` suffix to them - when applicable) and I've decided to change `Handlers`
+directory to `EndpointHandlers` and move it into `Configurations` directory.
+
+My final version can be found [here](https://github.com/sswietoniowski/learning-aspnetcore-webapi-7-building-minimal-apis/tree/d28bf28a66a42403d9e03e7999e58cc08f90e047).
 
 #### 3rd Party Libraries
 
