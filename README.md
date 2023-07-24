@@ -1248,7 +1248,7 @@ I had to add `ILogger<PhoneDto> logger` parameter to my handler methods and then
 Filter types:
 
 - _authorization filter_ - runs first, determine whether the user is authorized for the request,
-- _resource fileters_ - after authorization,
+- _resource filters_ - after authorization,
 - _action filters_ - run immediately before and after an action method is called,
 - _exception filters_ - apply global policies to unhandled exceptions that occur before the response body has been written,
 - _result filters_ - run immediately before and after the execution of action results, run only when the action method has executed successfully.
