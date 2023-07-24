@@ -12,21 +12,18 @@ builder.AddCors();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddControllers();
 // add problem details
 builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 
-app.MapControllers();
-
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-
     // no need to add it explicitly, it's added by default
     app.UseDeveloperExceptionPage();
+
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 else
 {
@@ -56,7 +53,7 @@ app.MapGet("/api/images", string () => throw new NotImplementedException("This e
 // });
 
 // catch all endpoint (must be registered after all other endpoints)
-app.Map("/{*path}", (string path) => 
+app.Map("/{*path}", (string path) =>
 {
     return Results.Problem(
         title: "The endpoint you are looking for does not exist!",
