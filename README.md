@@ -1405,6 +1405,11 @@ While this would work, I would question whether it is a good idea to implement t
 it is too easy to implement it incorrectly (just place the handler at the beginning) and inadvertently
 'catch all' requests, reporting them as 'not found' when in fact they are not.
 
+Also, this 404 error would be returned anyway by the server, so it is not really necessary to implement it.
+I've added this section just to show you that it is possible to do it (because someone asked me about it,
+specifically how to differentiate between 404 in case of missing contact for a given id and calling
+non-existing endpoint).
+
 ## Summary
 
 Now you know how to build a minimal API in .NET 7.0.
