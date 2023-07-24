@@ -76,6 +76,7 @@ Original course materials can be found [here](https://app.pluralsight.com/librar
     - [Describing API Security in Swagger](#describing-api-security-in-swagger)
   - [Extras](#extras)
     - [Testing your local API with ngrok](#testing-your-local-api-with-ngrok)
+    - [Catch-all Endpoint](#catch-all-endpoint)
   - [Summary](#summary)
 
 ## Setup
@@ -1325,6 +1326,72 @@ ngrok http https://localhost:5001 --host-header="localhost:5001"
 Now you can use the provided URL to test your API.
 
 For example in my case I can use `https://6567-93-181-134-228.ngrok-free.app/api/contacts` (in your case this address would be different) to test my API.
+
+### Catch-all Endpoint
+
+We might want to have a catch-all endpoint that will handle all requests that are not handled by other endpoints.
+
+One way to do it is to add a catch-all endpoint at the end of your `Program.cs` file, like so:
+
+```csharp
+// catch all endpoint
+app.MapFallback(async Task (context) =>
+{
+    context.Response.StatusCode = StatusCodes.Status404NotFound;
+    await context.Response.WriteAsync($"The endpoint you are looking for does not exist!");
+});
+```
+
+Now when calling an endpoint that does not exist:
+
+```http
+### Call to non-existing endpoint
+GET {{baseUri}}/non-existing HTTP/1.1
+Accept: application/json
+```
+
+I will get the following response:
+
+```text
+HTTP/1.1 404 Not Found
+Connection: close
+Date: Mon, 24 Jul 2023 11:45:13 GMT
+Server: Kestrel
+Transfer-Encoding: chunked
+
+The endpoint you are looking for does not exist!
+```
+
+Alternatively we can use something like this instead:
+
+```csharp
+// catch all endpoint (must be registered after all other endpoints!)
+app.Map("/{*path}", (string path) =>
+{
+    return Results.Problem(
+        title: "The endpoint you are looking for does not exist!",
+        detail: path,
+        statusCode: StatusCodes.Status404NotFound);
+});
+```
+
+And our result for the same request will be:
+
+```text
+HTTP/1.1 404 Not Found
+Connection: close
+Content-Type: application/problem+json
+Date: Mon, 24 Jul 2023 12:02:15 GMT
+Server: Kestrel
+Transfer-Encoding: chunked
+
+{
+  "type": "https://tools.ietf.org/html/rfc7231#section-6.5.4",
+  "title": "The endpoint you are looking for does not exist!",
+  "status": 404,
+  "detail": "api/non-existing"
+}
+```
 
 ## Summary
 

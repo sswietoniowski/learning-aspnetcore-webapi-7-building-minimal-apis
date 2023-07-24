@@ -48,6 +48,22 @@ app.RegisterPhonesEndpoints();
 // images -> and endpoint that throws exception (just for demo purposes)
 app.MapGet("/api/images", string () => throw new NotImplementedException("This endpoint is not implemented yet!"));
 
+// catch all endpoint
+// app.MapFallback(async Task (context) =>
+// {
+//     context.Response.StatusCode = StatusCodes.Status404NotFound;
+//     await context.Response.WriteAsync($"The endpoint you are looking for does not exist!");
+// });
+
+// catch all endpoint (must be registered after all other endpoints!)
+app.Map("/{*path}", (string path) => 
+{
+    return Results.Problem(
+        title: "The endpoint you are looking for does not exist!",
+        detail: path,
+        statusCode: StatusCodes.Status404NotFound);
+});
+
 // recreate & migrate the database on each run, for demo purposes
 using var scope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
 var dbContext = scope.ServiceProvider.GetRequiredService<ContactsDbContext>();

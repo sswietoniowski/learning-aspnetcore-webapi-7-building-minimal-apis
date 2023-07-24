@@ -57,3 +57,6 @@ GET {{baseUri}}/images HTTP/1.1
 GET {{baseUri}}/images HTTP/1.1
 Accept: application/json
 
+### Call to non-existing endpoint
+GET {{baseUri}}/non-existing HTTP/1.1
+Accept: application/json
