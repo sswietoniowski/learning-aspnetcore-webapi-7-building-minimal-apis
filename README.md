@@ -1292,7 +1292,7 @@ Couple of things that I found interesting.
 
 ### Testing your local API with ngrok
 
-[Ngrok](https://ngrok.com/) is a tool that allows you to expose your local API to the internet. This capability is very useful when you want to test your API (or your website for that matter) on a real device (like a phone).
+[Ngrok](https://ngrok.com/) is a tool that allows you to expose your local API to the Internet. This capability is very useful when you want to test your API (or your website for that matter) on a real device (like a phone).
 
 First you need to install this tool, I'm using Windows and provided that I've got [`Chocolatey`](https://chocolatey.org/) installed, I can install `ngrok` like so:
 
