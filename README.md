@@ -74,6 +74,8 @@ Original course materials can be found [here](https://app.pluralsight.com/librar
     - [Describing Request Types](#describing-request-types)
     - [Gaining Full OpenApiOperation Control](#gaining-full-openapioperation-control)
     - [Describing API Security in Swagger](#describing-api-security-in-swagger)
+  - [Extras](#extras)
+    - [Testing your local API with ngrok](#testing-your-local-api-with-ngrok)
   - [Summary](#summary)
 
 ## Setup
@@ -1283,6 +1285,46 @@ I had to add `ILogger<PhoneDto> logger` parameter to my handler methods and then
 ### Gaining Full OpenApiOperation Control
 
 ### Describing API Security in Swagger
+
+## Extras
+
+Couple of things that I found interesting.
+
+### Testing your local API with ngrok
+
+[Ngrok](https://ngrok.com/) is a tool that allows you to expose your local API to the internet. This capability is very useful when you want to test your API (or your website for that matter) on a real device (like a phone).
+
+First you need to install this tool, I'm using Windows and provided that I've got [`Chocolatey`](https://chocolatey.org/) installed, I can install `ngrok` like so:
+
+```powershell
+choco install ngrok
+```
+
+You also need to create an account on [ngrok.com](https://ngrok.com/).
+
+After that you will need to add your `authtoken` to `ngrok` like so:
+
+```powershell
+ngrok authtoken <your_auth_token>
+```
+
+Then you need to run your API and then run `ngrok` like so.
+
+First run your API:
+
+```powershell
+dotnet run
+```
+
+Then run `ngrok`:
+
+```powershell
+ngrok http https://localhost:5001 --host-header="localhost:5001"
+```
+
+Now you can use the provided URL to test your API.
+
+For example in my case I can use `https://6567-93-181-134-228.ngrok-free.app/api/contacts` (in your case this address would be different) to test my API.
 
 ## Summary
 
