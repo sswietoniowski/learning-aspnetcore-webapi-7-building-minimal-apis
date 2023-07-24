@@ -1401,6 +1401,10 @@ Transfer-Encoding: chunked
 }
 ```
 
+While this would work, I would question whether it is a good idea to implement this feature. This is because
+it is too easy to implement it incorrectly (just place the handler at the beginning) and inadvertently
+'catch all' requests, reporting them as 'not found' when in fact they are not.
+
 ## Summary
 
 Now you know how to build a minimal API in .NET 7.0.
