@@ -87,6 +87,18 @@ dotnet build
 dotnet watch run
 ```
 
+If you want to run selected profile, you can use:
+
+```cmd
+dotnet run --launch-profile <profile-name>
+```
+
+In my case it could be for example:
+
+```cmd
+dotnet run --launch-profile "Contacts API (Development)"
+```
+
 ## Introduction to ASP.NET Core Minimal APIs
 
 To create a new minimal API project, just choose the "Web API" template in Visual Studio or use the `dotnet new webapi` command like so (just an example):
@@ -934,7 +946,7 @@ To see different ways of handling exceptions, I've changed `launchSettings.json`
     }
   },
   "profiles": {
-    "Contacts.WebAPI": {
+    "Contacts API (Development)": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": false,
@@ -942,6 +954,17 @@ To see different ways of handling exceptions, I've changed `launchSettings.json`
       "applicationUrl": "https://localhost:5001;http://localhost:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "isDefault": true
+    },
+    "Contacts API (Production)": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "launchUrl": "",
+      "applicationUrl": "https://localhost:5001;http://localhost:5000",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production"
       }
     },
     "IIS Express": {
@@ -956,7 +979,7 @@ To see different ways of handling exceptions, I've changed `launchSettings.json`
 }
 ```
 
-`Contacts.WebAPI` will run in development environment, `IIS Express` will run in production environment.
+`Contacts API (Development)` will run in development environment , `Contacts API (Production)` or `IIS Express` will run in production environment.
 
 If you encounter an error while trying to use IIS Express, read [this](https://stackoverflow.com/questions/64880715/https-error-in-asp-net-core-app-running-on-iisexpress-pr-connect-reset-error)
 and consider using `Tests\RegenerateIISExpressCertificate.ps1` script.

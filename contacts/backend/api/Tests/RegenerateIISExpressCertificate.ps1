@@ -59,7 +59,7 @@ try {
         & $command $optionsDelete
         Write-Host "Running $command $optionsAdd"
         & $command $optionsAdd
-    } 
+    }
 }
 catch {
     Write-Error $_.Exception.Message
