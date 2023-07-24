@@ -1366,13 +1366,14 @@ Alternatively we can use something like this instead:
 
 ```csharp
 // catch all endpoint (must be registered after all other endpoints!)
+// catch all endpoint (must be registered after all other endpoints)
 app.Map("/{*path}", (string path) =>
 {
     return Results.Problem(
         title: "The endpoint you are looking for does not exist!",
         detail: path,
         statusCode: StatusCodes.Status404NotFound);
-});
+}).ExcludeFromDescription();
 ```
 
 And our result for the same request will be:

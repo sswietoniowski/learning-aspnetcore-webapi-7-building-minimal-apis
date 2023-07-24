@@ -55,14 +55,14 @@ app.MapGet("/api/images", string () => throw new NotImplementedException("This e
 //     await context.Response.WriteAsync($"The endpoint you are looking for does not exist!");
 // });
 
-// catch all endpoint (must be registered after all other endpoints!)
+// catch all endpoint (must be registered after all other endpoints)
 app.Map("/{*path}", (string path) => 
 {
     return Results.Problem(
         title: "The endpoint you are looking for does not exist!",
         detail: path,
         statusCode: StatusCodes.Status404NotFound);
-});
+}).ExcludeFromDescription();
 
 // recreate & migrate the database on each run, for demo purposes
 using var scope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
