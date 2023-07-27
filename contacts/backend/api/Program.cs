@@ -1,5 +1,7 @@
 using Contacts.Api.Configurations.Extensions;
 using Contacts.Api.Infrastructure;
+using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -53,7 +55,7 @@ app.MapGet("/api/images", string () => throw new NotImplementedException("This e
 // });
 
 // catch all endpoint (must be registered after all other endpoints)
-app.Map("/{*path}", (string path) =>
+app.Map("/{*path}", [EnableCors] [ResponseCache(NoStore = true)] (string path) =>
 {
     return Results.Problem(
         title: "The endpoint you are looking for does not exist!",
