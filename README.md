@@ -6,6 +6,8 @@ Based on this course [Building ASP.NET Core 7 Minimal APIs](https://app.pluralsi
 
 Original course materials can be found [here](https://app.pluralsight.com/library/courses/asp-dot-net-core-7-building-minimal-apis/exercise-files) and [here](https://github.com/KevinDockx/BuildingAspNetCore7MinimalAPIs).
 
+I've also added couple ideas found in this book [Mastering Minimal APIs in ASP.NET Core](https://learning.oreilly.com/library/view/mastering-minimal-apis/9781803237824/) [📁](https://github.com/PacktPublishing/Minimal-APIs-in-ASP.NET-Core-6).
+
 ## Table of Contents
 
 - [Learning ASP.NET Core - WebAPI (.NET 7) Building Minimal APIs](#learning-aspnet-core---webapi-net-7-building-minimal-apis)
