@@ -470,7 +470,7 @@ and our `GetContactsAsync` method would look like this (it's been slightly modif
 Status codes tell the consumer:
 
 - if the request worked out as expected,
-- if something went wrong, who's responsible it is.
+- if something went wrong, who is responsible.
 
 > Using the correct status codes is essential.
 
