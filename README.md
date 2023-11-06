@@ -491,7 +491,7 @@ Common status codes:
 From a minimal API endpoint we can return a `string`, any other type of object or `IResult` based types:
 
 - `Results.X` (where `X` is for example `Ok`),
-- `TypedResults.X` (preferred if you need to know why, watch [this](https://youtu.be/BmwJkoPnF24) video for more information).
+- `TypedResults.X` (preferred - if you need to know why, watch [this](https://youtu.be/BmwJkoPnF24) video for more information).
 
 If we know in advance what type of response we want to return, we can add that information to the handler signature, like so (`Task<Results<Ok<ContactDto>, NotFound>>` - as you can see we are returning either `Ok` or `NotFound`):
 
