@@ -62,7 +62,7 @@ GET {{baseUri}}/non-existing HTTP/1.1
 Accept: application/json
 
 ### Test endpoint filtering - update read only contact
-PUT {{baseUri}}/contacts/1 HTTP/1.1
+PUT {{baseUri}}/contacts/2 HTTP/1.1
 Content-Type: application/json
 
 {

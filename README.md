@@ -1291,7 +1291,7 @@ We can create a new endpoint filter like so:
             .AddEndpointFilter(async (context, next) =>
             {
                 var contactId = context.GetArgument<int>(0);
-                var readOnlyContactIds = new[] { 1  };
+                var readOnlyContactIds = new[] { 2, 3 };
 
                 if (readOnlyContactIds.Contains(contactId))
                 {
@@ -1311,9 +1311,9 @@ We can create a new endpoint filter like so:
             });
 ```
 
-In this example our filter will prevent updating protected contacts (with ids `1`).
+In this example our filter will prevent updating read only contacts (with ids: `2` or `3`).
 
-If we try to update a protected contact, we would receive the following response:
+If we try to update such contact, we would receive the following response:
 
 ```text
 HTTP/1.1 400 Bad Request
@@ -1327,11 +1327,72 @@ Transfer-Encoding: chunked
   "type": "https://tools.ietf.org/html/rfc7231#section-6.5.1",
   "title": "Contact is read only and cannot be changed.",
   "status": 400,
-  "detail": "Contact with id 1 is read only and cannot be changed."
+  "detail": "Contact with id 2 is read only and cannot be changed."
 }
 ```
 
 ### Making the Endpoint Filter Reusable
+
+In the previous example we've created an endpoint filter that prevents updating read only contacts.
+
+As it is now, it is not very reusable.
+
+We can improve it by extracting the filter to a separate class, like so:
+
+```csharp
+namespace Contacts.Api.Configurations.EndpointFilters
+{
+    public class ContactReadOnlyFilter : IEndpointFilter
+    {
+        private readonly int _readOnlyContactId;
+
+        public ContactReadOnlyFilter(int readOnlyContactId)
+        {
+            _readOnlyContactId = readOnlyContactId;
+        }
+
+        public ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+        {
+            int contactId;
+
+            if (context.HttpContext.Request.Method == "PUT")
+            {
+                contactId = context.GetArgument<int>(0);
+            }
+            else if (context.HttpContext.Request.Method == "DELETE")
+            {
+                contactId = context.GetArgument<int>(0);
+            }
+            else
+            {
+                throw new NotSupportedException("This filter is not supported for this scenario.");
+            }
+
+            if (contactId == _readOnlyContactId)
+            {
+                return new ValueTask<object?>(TypedResults.Problem(new()
+                {
+                    Status = 400,
+                    Title = "Contact is read only and cannot be changed.",
+                    Detail = $"Contact with id {contactId} is read only and cannot be changed."
+                }));
+            }
+
+            // invoke the next filter
+            var result = next.Invoke(context);
+            return result;
+        }
+    }
+}
+```
+
+Then we can add this filter to our endpoint like so:
+
+```csharp
+        var contactsEndpoints = app.MapGroup("/api/contacts")
+            .AddEndpointFilter(new ContactReadOnlyFilter(2))
+            .AddEndpointFilter(new ContactReadOnlyFilter(3));
+```
 
 ### Chaining Endpoint Filters and Applying Them to a Group
 
