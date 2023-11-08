@@ -21,7 +21,29 @@ public static class EndpointRouteBuilderExtensions
         contactsEndpoints.MapPost("", ContactsHandlers.CreateContactAsync);
 
         // PUT api/contacts/1
-        contactsEndpoints.MapPut("{id:int}", ContactsHandlers.UpdateContactAsync);
+        contactsEndpoints.MapPut("{id:int}", ContactsHandlers.UpdateContactAsync)
+            // Add a filter to the endpoint that will prevent updating read only contacts
+            .AddEndpointFilter(async (context, next) => 
+            {
+                var contactId = context.GetArgument<int>(0);
+                var readOnlyContactIds = new[] { 1  };
+
+                if (readOnlyContactIds.Contains(contactId))
+                {
+
+                    return TypedResults.Problem(new ()
+                    {
+                        Status = 400,
+                        Title = "Contact is read only and cannot be changed.",
+                        Detail = $"Contact with id {contactId} is read only and cannot be changed."
+                    });
+                }
+
+                // invoke the next filter
+                var result = await next.Invoke(context);
+
+                return result;
+            });
 
         // DELETE api/contacts/1
         contactsEndpoints.MapDelete("{id:int}", ContactsHandlers.DeleteContactAsync);

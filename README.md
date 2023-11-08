@@ -1282,6 +1282,55 @@ A request travels down the list of endpoint filters and then back up again in re
 
 ### Creating an Endpoint Filter
 
+We can create a new endpoint filter like so:
+
+```csharp
+        // PUT api/contacts/1
+        contactsEndpoints.MapPut("{id:int}", ContactsHandlers.UpdateContactAsync)
+            // Add a filter to the endpoint that will prevent updating read only contacts
+            .AddEndpointFilter(async (context, next) =>
+            {
+                var contactId = context.GetArgument<int>(0);
+                var readOnlyContactIds = new[] { 1  };
+
+                if (readOnlyContactIds.Contains(contactId))
+                {
+
+                    return TypedResults.Problem(new ()
+                    {
+                        Status = 400,
+                        Title = "Contact is read only and cannot be changed.",
+                        Detail = $"Contact with id {contactId} is read only and cannot be changed."
+                    });
+                }
+
+                // invoke the next filter
+                var result = await next.Invoke(context);
+
+                return result;
+            });
+```
+
+In this example our filter will prevent updating protected contacts (with ids `1`).
+
+If we try to update a protected contact, we would receive the following response:
+
+```text
+HTTP/1.1 400 Bad Request
+Connection: close
+Content-Type: application/problem+json
+Date: Wed, 08 Nov 2023 15:04:38 GMT
+Server: Kestrel
+Transfer-Encoding: chunked
+
+{
+  "type": "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+  "title": "Contact is read only and cannot be changed.",
+  "status": 400,
+  "detail": "Contact with id 1 is read only and cannot be changed."
+}
+```
+
 ### Making the Endpoint Filter Reusable
 
 ### Chaining Endpoint Filters and Applying Them to a Group
