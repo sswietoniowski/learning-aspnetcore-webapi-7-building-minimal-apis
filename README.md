@@ -1247,15 +1247,38 @@ I had to add `ILogger<PhoneDto> logger` parameter to my handler methods and then
 
 ## Implementing Business Logic with Endpoint Filters
 
+> **ASP.NET Core MVC filter pipeline** - a pipeline of filters that runs after MVC has selected the action to execute. These filters allow you to run code before or after specific stages in the request processing pipeline.
+
 Filter types:
 
 - _authorization filter_ - runs first, determine whether the user is authorized for the request,
-- _resource filters_ - after authorization,
-- _action filters_ - run immediately before and after an action method is called,
+- _resource filters_ - after authorization (after them model binding occurs),
+- _action filters_ - run immediately before an action method is called (after them action occurs),
 - _exception filters_ - apply global policies to unhandled exceptions that occur before the response body has been written,
 - _result filters_ - run immediately before and after the execution of action results, run only when the action method has executed successfully.
 
 ### Filters for Minimal APIs
+
+There is no comparable filter pipeline for minimal APIs, as an alternative, endpoint filters are supported.
+
+Endpoint filters enable:
+
+- running code before and after the endpoint handler,
+- inspecting and modifying parameters provided during endpoint handler invocation,
+- intercepting the response behavior of an endpoint handler.
+
+Common scenarios for filters:
+
+- logging request/response information,
+- transforming the request,
+- transforming the response,
+- (dis)allowing a request,
+- validating the incoming request.
+
+A request travels down the list of endpoint filters and then back up again in reverse order:
+
+- the order in which they are added is important!
+- filters can short-circuit the pipeline.
 
 ### Creating an Endpoint Filter
 
