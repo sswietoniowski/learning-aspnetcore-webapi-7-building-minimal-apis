@@ -1,44 +1,43 @@
-﻿namespace Contacts.Api.Configurations.EndpointFilters
+﻿namespace Contacts.Api.Configurations.EndpointFilters;
+
+public class ContactReadOnlyFilter : IEndpointFilter
 {
-    public class ContactReadOnlyFilter : IEndpointFilter
+    private readonly int _readOnlyContactId;
+
+    public ContactReadOnlyFilter(int readOnlyContactId)
     {
-        private readonly int _readOnlyContactId;
+        _readOnlyContactId = readOnlyContactId;
+    }
 
-        public ContactReadOnlyFilter(int readOnlyContactId)
+    public ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+    {
+        int contactId;
+
+        if (context.HttpContext.Request.Method == "PUT")
         {
-            _readOnlyContactId = readOnlyContactId;
+            contactId = context.GetArgument<int>(0);
+        }
+        else if (context.HttpContext.Request.Method == "DELETE")
+        {
+            contactId = context.GetArgument<int>(0);
+        }
+        else
+        {
+            throw new NotSupportedException("This filter is not supported for this scenario.");
         }
 
-        public ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+        if (contactId == _readOnlyContactId)
         {
-            int contactId;
-
-            if (context.HttpContext.Request.Method == "PUT")
+            return new ValueTask<object?>(TypedResults.Problem(new()
             {
-                contactId = context.GetArgument<int>(0);
-            }
-            else if (context.HttpContext.Request.Method == "DELETE")
-            {
-                contactId = context.GetArgument<int>(0);
-            }
-            else
-            {
-                throw new NotSupportedException("This filter is not supported for this scenario.");
-            }
-
-            if (contactId == _readOnlyContactId)
-            {
-                return new ValueTask<object?>(TypedResults.Problem(new()
-                {
-                    Status = 400,
-                    Title = "Contact is read only and cannot be changed.",
-                    Detail = $"Contact with id {contactId} is read only and cannot be changed."
-                }));
-            }
-
-            // invoke the next filter
-            var result = next.Invoke(context);
-            return result;
+                Status = 400,
+                Title = "Contact is read only and cannot be changed.",
+                Detail = $"Contact with id {contactId} is read only and cannot be changed."
+            }));
         }
+
+        // invoke the next filter
+        var result = next(context);
+        return result;
     }
 }

@@ -1389,9 +1389,18 @@ namespace Contacts.Api.Configurations.EndpointFilters
 Then we can add this filter to our endpoint like so:
 
 ```csharp
-        var contactsEndpoints = app.MapGroup("/api/contacts")
+        var contactsEndpointsForChange = app.MapGroup("/api/contacts")
             .AddEndpointFilter(new ContactReadOnlyFilter(2))
             .AddEndpointFilter(new ContactReadOnlyFilter(3));
+
+        // ...
+
+        // PUT api/contacts/1
+        contactsEndpointsForChange.MapPut("{id:int}", ContactsHandlers.UpdateContactAsync);
+
+        // DELETE api/contacts/1
+        contactsEndpointsForChange.MapDelete("{id:int}", ContactsHandlers.DeleteContactAsync)
+            .AddEndpointFilter<LogNotFoundResponseFilter>();
 ```
 
 ### Chaining Endpoint Filters and Applying Them to a Group
@@ -1446,6 +1455,78 @@ Then we can use it like so:
 ```
 
 ### Handling Request Validation
+
+To create a request validation filter first we need to add a validation library to our project, like so:
+
+```cmd
+dotnet add package MiniValidation
+```
+
+Then we can create a new filter, like so:
+
+```csharp
+using Contacts.Api.DTOs;
+using MiniValidation;
+
+namespace Contacts.Api.Configurations.EndpointFilters;
+
+public class ValidateAnnotationsFilter : IEndpointFilter
+{
+    public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+    {
+        var contactForCreationDto = context.GetArgument<ContactForCreationDto>(0);
+
+        if (!MiniValidator.TryValidate(contactForCreationDto, out var validationErrors))
+        {
+            return TypedResults.ValidationProblem(validationErrors);
+        }
+
+        return await next(context);
+    }
+}
+```
+
+It would validate whether our DTO for creating a contact is valid.
+
+For make it work we must add to the DTO some validation attributes, like so:
+
+```csharp
+using System.ComponentModel.DataAnnotations;
+
+namespace Contacts.Api.DTOs;
+
+public record ContactForCreationDto([Required] string FirstName, [Required] string LastName, [Required][EmailAddress] string Email);
+```
+
+Then we can use our filter:
+
+```csharp
+        // POST api/contacts
+        contactsEndpoints.MapPost("", ContactsHandlers.CreateContactAsync)
+            .AddEndpointFilter<ValidateAnnotationsFilter>();
+```
+
+Now if we try to add a contact with invalid content we will receive an error:
+
+```text
+HTTP/1.1 400 Bad Request
+Connection: close
+Content-Type: application/problem+json
+Date: Wed, 08 Nov 2023 15:54:16 GMT
+Server: Kestrel
+Transfer-Encoding: chunked
+
+{
+  "type": "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+  "title": "One or more validation errors occurred.",
+  "status": 400,
+  "errors": {
+    "Email": [
+      "The Email field is not a valid e-mail address."
+    ]
+  }
+}
+```
 
 ## Securing Your Minimal API
 

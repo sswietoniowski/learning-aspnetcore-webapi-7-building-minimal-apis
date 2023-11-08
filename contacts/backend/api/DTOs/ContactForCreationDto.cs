@@ -1,3 +1,5 @@
-﻿namespace Contacts.Api.DTOs;
+﻿using System.ComponentModel.DataAnnotations;
 
-public record ContactForCreationDto(string FirstName, string LastName, string Email);
+namespace Contacts.Api.DTOs;
+
+public record ContactForCreationDto([Required] string FirstName, [Required] string LastName, [Required][EmailAddress] string Email);

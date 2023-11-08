@@ -7,7 +7,9 @@ public static class EndpointRouteBuilderExtensions
 {
     public static void RegisterContactsEndpoints(this IEndpointRouteBuilder app)
     {
-        var contactsEndpoints = app.MapGroup("/api/contacts")
+        var contactsEndpoints = app.MapGroup("/api/contacts");
+
+        var contactsEndpointsForChange = app.MapGroup("/api/contacts")
             .AddEndpointFilter(new ContactReadOnlyFilter(2))
             .AddEndpointFilter(new ContactReadOnlyFilter(3));
 
@@ -21,13 +23,14 @@ public static class EndpointRouteBuilderExtensions
         contactsEndpoints.MapGet("{id:int}", ContactsHandlers.GetContactAsync).WithName("GetContact");
 
         // POST api/contacts
-        contactsEndpoints.MapPost("", ContactsHandlers.CreateContactAsync);
+        contactsEndpoints.MapPost("", ContactsHandlers.CreateContactAsync)
+            .AddEndpointFilter<ValidateAnnotationsFilter>();
 
         // PUT api/contacts/1
-        contactsEndpoints.MapPut("{id:int}", ContactsHandlers.UpdateContactAsync);
+        contactsEndpointsForChange.MapPut("{id:int}", ContactsHandlers.UpdateContactAsync);
 
         // DELETE api/contacts/1
-        contactsEndpoints.MapDelete("{id:int}", ContactsHandlers.DeleteContactAsync)
+        contactsEndpointsForChange.MapDelete("{id:int}", ContactsHandlers.DeleteContactAsync)
             .AddEndpointFilter<LogNotFoundResponseFilter>();
     }
 
