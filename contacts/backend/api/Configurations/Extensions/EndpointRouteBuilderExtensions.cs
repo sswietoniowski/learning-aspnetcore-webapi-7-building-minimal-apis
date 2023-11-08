@@ -27,7 +27,8 @@ public static class EndpointRouteBuilderExtensions
         contactsEndpoints.MapPut("{id:int}", ContactsHandlers.UpdateContactAsync);
 
         // DELETE api/contacts/1
-        contactsEndpoints.MapDelete("{id:int}", ContactsHandlers.DeleteContactAsync);
+        contactsEndpoints.MapDelete("{id:int}", ContactsHandlers.DeleteContactAsync)
+            .AddEndpointFilter<LogNotFoundResponseFilter>();
     }
 
     public static void RegisterPhonesEndpoints(this IEndpointRouteBuilder app)

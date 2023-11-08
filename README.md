@@ -1396,7 +1396,54 @@ Then we can add this filter to our endpoint like so:
 
 ### Chaining Endpoint Filters and Applying Them to a Group
 
+We can chain endpoint filters and apply them to a group (as in the previous example).
+
 ### Applying Business Logic Depending on the Response
+
+We can use endpoint filters to apply business logic depending on the response.
+
+In our case we would like to log information about any request that returns a `NotFound` response.
+
+To do that we can create a new endpoint filter, like so:
+
+```csharp
+using System.Net;
+
+namespace Contacts.Api.Configurations.EndpointFilters
+{
+    public class LogNotFoundResponseFilter : IEndpointFilter
+    {
+        private readonly ILogger<LogNotFoundResponseFilter> _logger;
+
+        public LogNotFoundResponseFilter(ILogger<LogNotFoundResponseFilter> logger)
+        {
+            _logger = logger;
+        }
+
+        public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+        {
+            var result = await next.Invoke(context);
+
+            var actualResult = (result is INestedHttpResult) ? ((INestedHttpResult)result).Result : (IResult)result!;
+
+            if ((actualResult as IStatusCodeHttpResult)?.StatusCode == (int)HttpStatusCode.NotFound)
+            {
+                _logger.LogInformation($"Resource {context.HttpContext.Request.Path} was not found.");
+            }
+
+            return result;
+        }
+    }
+}
+```
+
+Then we can use it like so:
+
+```csharp
+        // DELETE api/contacts/1
+        contactsEndpoints.MapDelete("{id:int}", ContactsHandlers.DeleteContactAsync)
+            .AddEndpointFilter<LogNotFoundResponseFilter>();
+```
 
 ### Handling Request Validation
 
