@@ -83,3 +83,13 @@ Content-Type: application/json
     "lastName": "Doe",
     "email": "jdoe"
 }
+
+### Test authentication & authorization - get phones without authorization header
+GET {{baseUri}}/contacts/{{id}}/phones HTTP/1.1
+
+
+### Test authentication & authorization - get phones with a valid authorization header
+@jwtToken = PLACE_REAL_JWT_TOKEN_HERE
+
+GET {{baseUri}}/contacts/{{id}}/phones HTTP/1.1
+Authorize: Bearer {{jwtToken}}

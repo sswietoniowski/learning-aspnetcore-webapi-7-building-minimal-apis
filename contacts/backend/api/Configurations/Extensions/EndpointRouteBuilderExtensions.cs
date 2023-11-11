@@ -39,9 +39,11 @@ public static class EndpointRouteBuilderExtensions
         var phonesEndpoints = app.MapGroup("/api/contacts/{contactId:int}/phones");
 
         // GET api/contacts/1/phones
-        phonesEndpoints.MapGet("", PhonesHandlers.GetPhones);
+        phonesEndpoints.MapGet("", PhonesHandlers.GetPhones)
+            .RequireAuthorization();
 
         // GET api/contacts/1/phones/1
-        phonesEndpoints.MapGet("{phoneId:int}", PhonesHandlers.GetPhone);
+        phonesEndpoints.MapGet("{phoneId:int}", PhonesHandlers.GetPhone)
+            .RequireAuthorization();
     }
 }

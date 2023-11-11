@@ -7,7 +7,7 @@ namespace Contacts.Api.Configurations.Extensions;
 
 public static class WebApplicationBuilderExtensions
 {
-    public static void AddPersistence(this WebApplicationBuilder builder)
+    public static WebApplicationBuilder AddPersistence(this WebApplicationBuilder builder)
     {
         builder.Services.AddDbContext<ContactsDbContext>(options =>
         {
@@ -16,14 +16,18 @@ public static class WebApplicationBuilderExtensions
         });
 
         builder.Services.AddScoped<IContactsRepository, ContactsRepository>();
+
+        return builder;
     }
 
-    public static void AddMapper(this WebApplicationBuilder builder)
+    public static WebApplicationBuilder AddMapper(this WebApplicationBuilder builder)
     {
         builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
+
+        return builder;
     }
 
-    public static void AddCors(this WebApplicationBuilder builder)
+    public static WebApplicationBuilder AddCors(this WebApplicationBuilder builder)
     {
         builder.Services.AddCors(options =>
         {
@@ -35,5 +39,21 @@ public static class WebApplicationBuilderExtensions
                     .AllowAnyHeader();
             });
         });
+
+        return builder;
+    }
+
+    public static WebApplicationBuilder AddAuthentication(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddAuthentication().AddJwtBearer();
+
+        return builder;
+    }
+
+    public static WebApplicationBuilder AddAuthorization(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddAuthorization();
+
+        return builder;
     }
 }

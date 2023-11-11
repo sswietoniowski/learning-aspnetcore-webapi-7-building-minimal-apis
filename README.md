@@ -1557,6 +1557,14 @@ Our API validates a token. It does not generate it. It does not provide it.
 
 Add and configure authentication services. Tie authentication to the JWT bearer authentication handler.
 
+For this we need to add a new package to our project, like so:
+
+```cmd
+dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer
+```
+
+Then we can add and configure authentication services, like so:
+
 ```csharp
 builder.Services.AddAuthentication().AddJwtBearer();
 ```
@@ -1572,15 +1580,48 @@ builder.Services.AddAuthorization();
 Then require authorization for specific endpoints.
 
 ```csharp
-        // POST api/contacts
-        contactsEndpoints.MapPost("", ContactsHandlers.CreateContactAsync)
-            .AddEndpointFilter<ValidateAnnotationsFilter>();
+        // GET api/contacts/1/phones
+        phonesEndpoints.MapGet("", PhonesHandlers.GetPhones)
+            .RequireAuthorization();
+
+        // GET api/contacts/1/phones/1
+        phonesEndpoints.MapGet("{phoneId:int}", PhonesHandlers.GetPhone)
             .RequireAuthorization();
 ```
 
 ### Requiring a Bearer Token
 
-TODO:
+Create new extension methods, like so:
+
+```csharp
+    public static WebApplicationBuilder AddAuthentication(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddAuthentication().AddJwtBearer();
+
+        return builder;
+    }
+
+    public static WebApplicationBuilder AddAuthorization(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddAuthorization();
+
+        return builder;
+    }
+```
+
+Then we can use them like so:
+
+```csharp
+builder.AddAuthentication();
+builder.AddAuthorization();
+```
+
+Of course we must add authentication & authorization to our pipeline, like so:
+
+```csharp
+app.UseAuthentication();
+app.UseAuthorization();
+```
 
 ### Generating a Token
 
@@ -1597,13 +1638,37 @@ OAuth2 and OpenID Connect are standardized protocols for token-based security:
 
 > Our API validates a token. It does not generate it. It does not provide it.
 
+In the previous section we've added authentication and authorization to our pipeline, but we still need to configure it.
+
+To do that we can add a new section to our `appsettings.json` file:
+
+```json
+  "Authentication": {
+    "DefaultScheme": "Bearer",
+    "Schemes": {
+      "Bearer": {
+        "ValidAudiences": [
+          "contacts-api"
+        ],
+        "ValidIssuer": "dotnet-user-jwts"
+      }
+    }
+  }
+```
+
+It won't work yet, we still need to add a few things.
+
 ### Generating a Token with dotnet-user-jwts
 
 (ASP).NET Core includes a built-in tool to generate tokens which can be used during development:
 
-- `dotnet-user-jwts`.
+- [`dotnet-user-jwts`](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/jwt-authn?view=aspnetcore-7.0&tabs=windows).
 
-TODO:
+We can use it like so:
+
+```cmd
+dotnet user-jwts create
+```
 
 ### Creating and Applying an Authorization Policy
 

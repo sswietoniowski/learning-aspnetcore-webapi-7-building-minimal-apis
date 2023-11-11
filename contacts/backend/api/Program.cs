@@ -11,6 +11,9 @@ builder.AddMapper();
 
 builder.AddCors();
 
+builder.AddAuthentication();
+builder.AddAuthorization();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -37,6 +40,9 @@ else
 app.UseHttpsRedirection();
 
 app.UseCors();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 // contacts:
 app.RegisterContactsEndpoints();
