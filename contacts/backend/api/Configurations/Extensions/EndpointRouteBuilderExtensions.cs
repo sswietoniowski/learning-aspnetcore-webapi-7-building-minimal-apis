@@ -23,10 +23,17 @@ public static class EndpointRouteBuilderExtensions
             .WithOpenApi()
             .WithSummary("Gets all contacts")
             .WithDescription("Gets all contacts from the database")
-            .Produces<IEnumerable<ContactDto>>();
+            .Produces<IEnumerable<ContactDto>>()
+            .Produces(StatusCodes.Status400BadRequest);
 
         // GET api/contacts/1
-        contactsEndpoints.MapGet("{id:int}", ContactsHandlers.GetContactByIdAsync).WithName("GetContact");
+        contactsEndpoints.MapGet("{id:int}", ContactsHandlers.GetContactByIdAsync)
+            .WithName("GetContact")
+            .WithOpenApi()
+            .WithSummary("Gets a contact by id")
+            .WithDescription("Gets a contact by id from the database")
+            .Produces<ContactDto>()
+            .Produces(StatusCodes.Status404NotFound);
 
         // POST api/contacts
         contactsEndpoints.MapPost("", ContactsHandlers.CreateContactAsync)
