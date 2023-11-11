@@ -20,18 +20,19 @@ public static class EndpointRouteBuilderExtensions
         // GET api/contacts?search=ski&orderBy=LastName&desc=true
         contactsEndpoints.MapGet("", ContactsHandlers.GetContactsAsync)
             .WithName("GetContacts")
+            .WithOpenApi()
             .WithSummary("Gets all contacts")
             .WithDescription("Gets all contacts from the database")
-            .Produces<ContactDto>()
-            .Produces(StatusCodes.Status404NotFound);
+            .Produces<IEnumerable<ContactDto>>();
 
         // GET api/contacts/1
-        contactsEndpoints.MapGet("{id:int}", ContactsHandlers.GetContactAsync).WithName("GetContact");
+        contactsEndpoints.MapGet("{id:int}", ContactsHandlers.GetContactByIdAsync).WithName("GetContact");
 
         // POST api/contacts
         contactsEndpoints.MapPost("", ContactsHandlers.CreateContactAsync)
             .AddEndpointFilter<ValidateAnnotationsFilter>()
             .WithName("CreateContact")
+            .WithOpenApi()
             .WithSummary("Creates a new contact")
             .WithDescription("Creates a new contact in the database")
             .Produces(StatusCodes.Status201Created)
@@ -45,6 +46,7 @@ public static class EndpointRouteBuilderExtensions
         contactsEndpoints.MapDelete("{id:int}", ContactsHandlers.DeleteContactAsync)
             .AddEndpointFilter<LogNotFoundResponseFilter>()
             .WithName("DeleteContact")
+            .WithOpenApi()
             .WithSummary("Deletes a contact by id")
             .WithDescription("Deletes a contact by id from the database")
             .Produces(StatusCodes.Status204NoContent)

@@ -1778,17 +1778,44 @@ But for this to work, we must first add a new package to our project, like so:
 dotnet add package Microsoft.AspNetCore.OpenApi
 ```
 
+And then we must change our previous code a little:
+
+```csharp
+        // GET api/contacts
+        // GET api/contacts?lastName=Nowak
+        // GET api/contacts?search=ski
+        // GET api/contacts?search=ski&orderBy=LastName&desc=true
+        contactsEndpoints.MapGet("", ContactsHandlers.GetContactsAsync)
+            .WithName("GetContacts")
+            .WithOpenApi()
+            .WithSummary("Gets all contacts")
+            .WithDescription("Gets all contacts from the database");
+```
+
 ### Describing Response Types and Status Codes
 
 Describe response types and status codes, like so:
 
 ```csharp
+        // GET api/contacts
+        // GET api/contacts?lastName=Nowak
+        // GET api/contacts?search=ski
+        // GET api/contacts?search=ski&orderBy=LastName&desc=true
+        contactsEndpoints.MapGet("", ContactsHandlers.GetContactsAsync)
+            .WithName("GetContacts")
+            .WithOpenApi()
+            .WithSummary("Gets all contacts")
+            .WithDescription("Gets all contacts from the database")
+            .Produces<IEnumerable<ContactDto>>()
+            .Produces(StatusCodes.Status400BadRequest);
+
         // GET api/contacts/1
-        contactsEndpoints.MapGet("{id:int}", ContactsHandlers.GetContactAsync)
+        contactsEndpoints.MapGet("{id:int}", ContactsHandlers.GetContactByIdAsync)
             .WithName("GetContact")
+            .WithOpenApi()
             .WithSummary("Gets a contact by id")
             .WithDescription("Gets a contact by id from the database")
-            .Produces<ContactDto>(StatusCodes.Status200OK)
+            .Produces<ContactDto>()
             .Produces(StatusCodes.Status404NotFound);
 ```
 
@@ -1801,6 +1828,7 @@ Also, We can describe request types, like so:
         contactsEndpoints.MapPost("", ContactsHandlers.CreateContactAsync)
             .AddEndpointFilter<ValidateAnnotationsFilter>()
             .WithName("CreateContact")
+            .WithOpenApi()
             .WithSummary("Creates a new contact")
             .WithDescription("Creates a new contact in the database")
             .Produces(StatusCodes.Status201Created)
@@ -1810,7 +1838,7 @@ Also, We can describe request types, like so:
 
 ### Gaining Full OpenApiOperation Control
 
-If we want to have full OpenApiOperation control, we can use `WithOperationAttribute` method, like so:
+If we want to have full OpenApiOperation control, we can use `WithOpenApi` method (this time with parameters), like so:
 
 ```csharp
         // DELETE api/contacts/1

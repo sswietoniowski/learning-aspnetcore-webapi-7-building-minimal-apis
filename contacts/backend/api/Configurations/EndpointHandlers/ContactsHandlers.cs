@@ -44,7 +44,7 @@ public static class ContactsHandlers
         return TypedResults.Ok(contactsDto);
     }
 
-    public static async Task<Results<Ok<ContactDto>, NotFound>> GetContactAsync([FromRoute] int id,
+    public static async Task<Results<Ok<ContactDto>, NotFound>> GetContactByIdAsync([FromRoute] int id,
         [FromServices] IContactsRepository repository, [FromServices] IMapper mapper)
     {
         var contact = await repository.GetContactAsync(id);
