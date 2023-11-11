@@ -1772,6 +1772,12 @@ We can add descriptions & summaries like so:
             .WithDescription("Gets all contacts from the database");
 ```
 
+But for this to work, we must first add a new package to our project, like so:
+
+```cmd
+dotnet add package Microsoft.AspNetCore.OpenApi
+```
+
 ### Describing Response Types and Status Codes
 
 Describe response types and status codes, like so:
@@ -1820,12 +1826,6 @@ If we want to have full OpenApiOperation control, we can use `WithOperationAttri
                 operation.Deprecated = true;
                 return operation;
             });
-```
-
-But to do that we must first add a new package to our project, like so:
-
-```cmd
-dotnet add package Microsoft.AspNetCore.OpenApi
 ```
 
 ### Describing API Security in Swagger
