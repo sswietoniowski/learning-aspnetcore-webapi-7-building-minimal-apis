@@ -1613,17 +1613,37 @@ TODO:
 
 ### A Few Words on Swagger / OpenAPI
 
+> **OpenAPI specification** - a programming language-agnostic standard for documenting HTTP APIs.
+
+Swashbuckle inspects your API and generates a specification from it.
+
+Swashbuckle UI wraps swagger-ui, a documentation interface.
+
+Support for improving the OpenAPI specification is provided via `Microsoft.AspNetCore.OpenApi`.
+
 ### Adding Support for OpenAPI with Swashbuckle
+
+TODO:
 
 ### Adding Descriptions and Summaries
 
+TODO:
+
 ### Describing Response Types and Status Codes
+
+TODO:
 
 ### Describing Request Types
 
+TODO:
+
 ### Gaining Full OpenApiOperation Control
 
+TODO:
+
 ### Describing API Security in Swagger
+
+TODO:
 
 ## Extras
 
