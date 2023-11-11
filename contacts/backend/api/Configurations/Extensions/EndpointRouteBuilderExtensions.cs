@@ -44,6 +44,6 @@ public static class EndpointRouteBuilderExtensions
 
         // GET api/contacts/1/phones/1
         phonesEndpoints.MapGet("{phoneId:int}", PhonesHandlers.GetPhone)
-            .RequireAuthorization();
+            .RequireAuthorization("RequireAdminFromPoland");
     }
 }
