@@ -54,6 +54,12 @@ public static class WebApplicationBuilderExtensions
     {
         builder.Services.AddAuthorization();
 
+        builder.Services.AddAuthorizationBuilder()
+            .AddPolicy("RequireAdminFromPoland", policy =>
+                policy
+                    .RequireRole("admin")
+                    .RequireClaim("country", "Poland"));
+
         return builder;
     }
 }

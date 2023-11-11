@@ -89,7 +89,8 @@ GET {{baseUri}}/contacts/{{id}}/phones HTTP/1.1
 
 
 ### Test authentication & authorization - get phones with a valid authorization header
-@jwtToken = PLACE_REAL_JWT_TOKEN_HERE
+@jwtToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6InNzd2lldG9uaW93c2tpIiwic3ViIjoic3N3aWV0b25pb3dza2kiLCJqdGkiOiI4MWI1MTZiZSIsImF1ZCI6ImNvbnRhY3RzLWFwaSIsIm5iZiI6MTY5OTY5NzYzMSwiZXhwIjoxNzA3NjQ2NDMxLCJpYXQiOjE2OTk2OTc2MzIsImlzcyI6ImRvdG5ldC11c2VyLWp3dHMifQ.Z5f4rpC9ZWDyaJiI-XRkCs3LCNM0rpLlvGXk2mv9iNw
 
 GET {{baseUri}}/contacts/{{id}}/phones HTTP/1.1
-Authorize: Bearer {{jwtToken}}
+Accept: application/json
+Authorization: Bearer {{jwtToken}}

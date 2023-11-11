@@ -1589,6 +1589,13 @@ Then require authorization for specific endpoints.
             .RequireAuthorization();
 ```
 
+To allow access to the given endpoint we can use instead `AllowAnonymous` method, like so:
+
+```csharp
+        phonesEndpoints.MapGet("", PhonesHandlers.GetPhones)
+            .AllowAnonymous();
+```
+
 ### Requiring a Bearer Token
 
 Create new extension methods, like so:
@@ -1623,6 +1630,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 ```
 
+Technically, the last two lines can be omitted, because they are added by default. By adding them explicitly we can see that they are added to our pipeline & we can change their order in the pipeline.
+
 ### Generating a Token
 
 Manually generate a token at level of your API:
@@ -1640,7 +1649,7 @@ OAuth2 and OpenID Connect are standardized protocols for token-based security:
 
 In the previous section we've added authentication and authorization to our pipeline, but we still need to configure it.
 
-To do that we can add a new section to our `appsettings.json` file:
+To do that we can add a new section to our `appsettings.Development.json` file:
 
 ```json
   "Authentication": {
@@ -1660,19 +1669,50 @@ It won't work yet, we still need to add a few things.
 
 ### Generating a Token with dotnet-user-jwts
 
-(ASP).NET Core includes a built-in tool to generate tokens which can be used during development:
+(ASP).NET Core (starting with .NET 7) includes a built-in tool to generate tokens which can be used during development:
 
 - [`dotnet-user-jwts`](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/jwt-authn?view=aspnetcore-7.0&tabs=windows).
 
 We can use it like so:
 
 ```cmd
-dotnet user-jwts create
+dotnet user-jwts create --audience contacts-api
 ```
 
 ### Creating and Applying an Authorization Policy
 
-TODO:
+We can add a new authorization policy like so:
+
+```csharp
+    public static WebApplicationBuilder AddAuthorization(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddAuthorization();
+
+        builder.Services.AddAuthorizationBuilder()
+            .AddPolicy("RequireAdminFromPoland", policy =>
+                policy
+                    .RequireRole("admin")
+                    .RequireClaim("country", "Poland"));
+
+        return builder;
+    }
+```
+
+Then we can use it to restrict access to the endpoint like so:
+
+```csharp
+        // GET api/contacts/1/phones/1
+        phonesEndpoints.MapGet("{phoneId:int}", PhonesHandlers.GetPhone)
+            .RequireAuthorization("RequireAdminFromPoland");
+```
+
+Of course to test that this policy really works we would have to generate a proper token (with `country` claim set to `Poland` and `admin` role).
+
+We could do it like so:
+
+```cmd
+dotnet user-jwts create --audience contacts-api --claim country=Poland --role admin
+```
 
 ## Documenting Your Minimal API
 
