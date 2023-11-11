@@ -1532,15 +1532,82 @@ Transfer-Encoding: chunked
 
 ### High-level API Security Overview
 
+> There's no "one size fits all" approach when it comes to securing clients & APIs.
+
+Couple of things to keep in mind:
+
+- application-level and/or infrastructure level?
+- on the same domain or cross-domain?
+- local or centralized users & credentials?
+- authentication and/or authorization?
+
 ### Token-based Security for Minimal APIs
+
+![Token Based Security](./img/01_token_based_security.jpg)
+
+> Tokens are often JWTs but don’t have to be.
+
+Our API validates a token. It does not generate it. It does not provide it.
+
+> **Authentication** - the process of determining whether someone or something is who or what it says it is.
+
+**Authentication** - the token contains verifiable info on who or what is accessing it.
+
+**Delegation** - the token allows access on behalf of a user or application.
+
+Add and configure authentication services. Tie authentication to the JWT bearer authentication handler.
+
+```csharp
+builder.Services.AddAuthentication().AddJwtBearer();
+```
+
+> **Authorization** - the process of determining what someone or something is allowed to do
+
+First add and configure authorization services.
+
+```csharp
+builder.Services.AddAuthorization();
+```
+
+Then require authorization for specific endpoints.
+
+```csharp
+        // POST api/contacts
+        contactsEndpoints.MapPost("", ContactsHandlers.CreateContactAsync)
+            .AddEndpointFilter<ValidateAnnotationsFilter>();
+            .RequireAuthorization();
+```
 
 ### Requiring a Bearer Token
 
+TODO:
+
 ### Generating a Token
+
+Manually generate a token at level of your API:
+
+- `/login` endpoint,
+- good for simple use cases, not a good approach for most scenarios.
+
+OAuth2 and OpenID Connect are standardized protocols for token-based security:
+
+- "token based security on steroids",
+- centralized identity providers implement these & generate tokens,
+- Azure AD, IdentityServer, Auth0, ...
+
+> Our API validates a token. It does not generate it. It does not provide it.
 
 ### Generating a Token with dotnet-user-jwts
 
+(ASP).NET Core includes a built-in tool to generate tokens which can be used during development:
+
+- `dotnet-user-jwts`.
+
+TODO:
+
 ### Creating and Applying an Authorization Policy
+
+TODO:
 
 ## Documenting Your Minimal API
 
