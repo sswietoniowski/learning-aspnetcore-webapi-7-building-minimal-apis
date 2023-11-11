@@ -1,6 +1,7 @@
 ﻿using Contacts.Api.Infrastructure;
 using Contacts.Api.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using System.Reflection;
 
 namespace Contacts.Api.Configurations.Extensions;
@@ -59,6 +60,35 @@ public static class WebApplicationBuilderExtensions
                 policy
                     .RequireRole("admin")
                     .RequireClaim("country", "Poland"));
+
+        return builder;
+    }
+
+    public static WebApplicationBuilder AddSwagger(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen(options =>
+        {
+            options.AddSecurityDefinition("TokenAuthNZ",
+                new()
+                {
+                    Name = "Authorization",
+                    Description = "Token-based authentication and authorization",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "Bearer",
+                    In = ParameterLocation.Header
+                });
+            options.AddSecurityRequirement(new()
+            {
+                {
+                    new ()
+                    {
+                        Reference = new OpenApiReference {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "TokenAuthNZ" }
+                    }, new List<string>()}
+            });
+        });
 
         return builder;
     }

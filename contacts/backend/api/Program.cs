@@ -6,16 +6,20 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// add persistence configuration
 builder.AddPersistence();
+// add mapper configuration
 builder.AddMapper();
 
+// add CORS configuration
 builder.AddCors();
 
+// add authentication & authorization configuration
 builder.AddAuthentication();
 builder.AddAuthorization();
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// add Swagger configuration
+builder.AddSwagger();
 
 // add problem details
 builder.Services.AddProblemDetails();
@@ -26,9 +30,6 @@ if (app.Environment.IsDevelopment())
 {
     // no need to add it explicitly, it's added by default
     app.UseDeveloperExceptionPage();
-
-    app.UseSwagger();
-    app.UseSwaggerUI();
 }
 else
 {
@@ -38,6 +39,9 @@ else
 }
 
 app.UseHttpsRedirection();
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseCors();
 

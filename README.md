@@ -1728,27 +1728,142 @@ Support for improving the OpenAPI specification is provided via `Microsoft.AspNe
 
 ### Adding Support for OpenAPI with Swashbuckle
 
-TODO:
+This support is built-in in .NET 7.0.
+
+To be consistent with the rest of the implementation, we can create an extension method:
+
+```csharp
+    public static WebApplicationBuilder AddSwagger(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
+
+        return builder;
+    }
+```
+
+And then we can use it like so:
+
+```csharp
+builder.AddSwagger();
+```
+
+Of course we must add it to our pipeline, like so:
+
+```csharp
+app.UseSwagger();
+app.UseSwaggerUI();
+```
+
+Normally that part is included only in development environment.
 
 ### Adding Descriptions and Summaries
 
-TODO:
+We can add descriptions & summaries like so:
+
+```csharp
+        // GET api/contacts
+        // GET api/contacts?lastName=Nowak
+        // GET api/contacts?search=ski
+        // GET api/contacts?search=ski&orderBy=LastName&desc=true
+        contactsEndpoints.MapGet("", ContactsHandlers.GetContactsAsync)
+            .WithName("GetContacts")
+            .WithSummary("Gets all contacts")
+            .WithDescription("Gets all contacts from the database");
+```
 
 ### Describing Response Types and Status Codes
 
-TODO:
+Describe response types and status codes, like so:
+
+```csharp
+        // GET api/contacts/1
+        contactsEndpoints.MapGet("{id:int}", ContactsHandlers.GetContactAsync)
+            .WithName("GetContact")
+            .WithSummary("Gets a contact by id")
+            .WithDescription("Gets a contact by id from the database")
+            .Produces<ContactDto>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound);
+```
 
 ### Describing Request Types
 
-TODO:
+Also, We can describe request types, like so:
+
+```csharp
+        // POST api/contacts
+        contactsEndpoints.MapPost("", ContactsHandlers.CreateContactAsync)
+            .AddEndpointFilter<ValidateAnnotationsFilter>()
+            .WithName("CreateContact")
+            .WithSummary("Creates a new contact")
+            .WithDescription("Creates a new contact in the database")
+            .Produces(StatusCodes.Status201Created)
+            .ProducesValidationProblem()
+            .Accepts<ContactForCreationDto>("application/json");
+```
 
 ### Gaining Full OpenApiOperation Control
 
-TODO:
+If we want to have full OpenApiOperation control, we can use `WithOperationAttribute` method, like so:
+
+```csharp
+        // DELETE api/contacts/1
+        contactsEndpoints.MapDelete("{id:int}", ContactsHandlers.DeleteContactAsync)
+            .AddEndpointFilter<LogNotFoundResponseFilter>()
+            .WithName("DeleteContact")
+            .WithSummary("Deletes a contact by id")
+            .WithDescription("Deletes a contact by id from the database")
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status404NotFound)
+            .WithOpenApi(operation =>
+            {
+                operation.Deprecated = true;
+                return operation;
+            });
+```
+
+But to do that we must first add a new package to our project, like so:
+
+```cmd
+dotnet add package Microsoft.AspNetCore.OpenApi
+```
 
 ### Describing API Security in Swagger
 
-TODO:
+Of course we can describe API security in Swagger, like so:
+
+```csharp
+    public static WebApplicationBuilder AddSwagger(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen(options =>
+        {
+            options.AddSecurityDefinition("TokenAuthNZ",
+                new()
+                {
+                    Name = "Authorization",
+                    Description = "Token-based authentication and authorization",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "Bearer",
+                    In = ParameterLocation.Header
+                });
+            options.AddSecurityRequirement(new()
+            {
+                {
+                    new ()
+                    {
+                        Reference = new OpenApiReference {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "TokenAuthNZ" }
+                    }, new List<string>()}
+            });
+        });
+
+        return builder;
+    }
+```
+
+Now we can see that our API is secured with a token.
 
 ## Extras
 
